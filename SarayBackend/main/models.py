@@ -72,6 +72,19 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
         ordering = ['-created_at']
         verbose_name_plural = _('Пользователи')
 
+class Locations(models.Model):
+    title = models.CharField(max_length=32)
+    text = models.TextField(max_length=4096)
+    image = models.FileField(upload_to='locations')
+    cost = models.SmallIntegerField()
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = _('локация')
+        verbose_name_plural = _('Локации')
+
 class News(models.Model):
     author = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='author', blank = True, null = True)
     title = models.CharField(_('Заголовок'), max_length=128)

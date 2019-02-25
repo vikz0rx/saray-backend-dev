@@ -1,10 +1,16 @@
 from django.contrib import admin
 from mediumeditor.admin import MediumEditorAdmin
-from .models import SarayUser ,News
+from .models import SarayUser,Locations, News
 
 @admin.register(SarayUser)
 class SarayUserAdmin(admin.ModelAdmin):
     list_display = ['email', 'created_at']
+
+@admin.register(Locations)
+class LocationsAdmin(MediumEditorAdmin, admin.ModelAdmin):
+    list_display = ['title']
+
+    mediumeditor_fields = ('text', )
 
 @admin.register(News)
 class NewsAdmin(MediumEditorAdmin, admin.ModelAdmin):

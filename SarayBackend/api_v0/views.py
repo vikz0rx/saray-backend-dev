@@ -55,6 +55,12 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
+   queryset = Locations.objects.all()
+
+   def get_serializer_class(self):
+       return LocationsDetailSerializer
+
 class NewsViewSet(viewsets.ReadOnlyModelViewSet):
    queryset = News.objects.all()
 
