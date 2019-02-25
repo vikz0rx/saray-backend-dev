@@ -61,6 +61,18 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
    def get_serializer_class(self):
        return LocationsDetailSerializer
 
+class BookingOptionsViewSet(viewsets.ReadOnlyModelViewSet):
+   queryset = BookingOptions.objects.all()
+
+   def get_serializer_class(self):
+       return BookingOptionsDetailSerializer
+
+class BookingTypesViewSet(viewsets.ReadOnlyModelViewSet):
+   queryset = BookingTypes.objects.all()
+
+   def get_serializer_class(self):
+       return BookingTypesDetailSerializer
+
 class PhotographsViewSet(viewsets.ReadOnlyModelViewSet):
    queryset = Photographs.objects.all()
 

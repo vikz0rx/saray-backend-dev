@@ -70,7 +70,8 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name_plural = _('Пользователи')
+        verbose_name = _('пользователя фотостудии')
+        verbose_name_plural = _('Пользователи фотостудии')
 
 class Locations(models.Model):
     title = models.CharField(max_length=32)
@@ -82,8 +83,32 @@ class Locations(models.Model):
         return self.title
 
     class Meta:
-        verbose_name = _('локация')
+        verbose_name = _('локацию')
         verbose_name_plural = _('Локации')
+
+class BookingTypes(models.Model):
+    title = models.CharField(max_length=32)
+    desc = models.CharField(max_length=512)
+    cost = models.SmallIntegerField()
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = _('тип бронирования')
+        verbose_name_plural = _('Бронирования / Типы бронирования')
+
+class BookingOptions(models.Model):
+    title = models.CharField(max_length=32)
+    desc = models.CharField(max_length=512)
+    cost = models.SmallIntegerField()
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = _('дополнительную услугу')
+        verbose_name_plural = _('Бронирования / Дополнительные услуги')
 
 class Photographs(models.Model):
     first_name = models.CharField(max_length=32)
@@ -96,7 +121,7 @@ class Photographs(models.Model):
         return self.first_name + ' ' + self.last_name
 
     class Meta:
-        verbose_name = _('фотограф')
+        verbose_name = _('фотографа')
         verbose_name_plural = _('Фотографы')
 
 class News(models.Model):

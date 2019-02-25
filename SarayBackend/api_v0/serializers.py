@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import Group
 from rest_framework import serializers
-from main.models import Locations, Photographs,News, SarayUser
+from main.models import Locations, BookingOptions, BookingTypes, Photographs,News, SarayUser
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -107,6 +107,24 @@ class PhotographsDetailSerializer(serializers.ModelSerializer):
            'desc',
            'link',
            'image',
+       ]
+
+class BookingOptionsDetailSerializer(serializers.ModelSerializer):
+   class Meta:
+       model = BookingOptions
+       fields = [
+           'title',
+           'desc',
+           'cost',
+       ]
+
+class BookingTypesDetailSerializer(serializers.ModelSerializer):
+   class Meta:
+       model = BookingTypes
+       fields = [
+           'title',
+           'desc',
+           'cost',
        ]
 
 class NewsPreviewSerializer(serializers.ModelSerializer):
