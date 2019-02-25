@@ -1,12 +1,9 @@
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import (
-    AbstractBaseUser, BaseUserManager, PermissionsMixin
-)
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils.translation import ugettext_lazy as _
-import jwt
-
 from datetime import datetime, timedelta
+import jwt
 
 class SarayUserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
