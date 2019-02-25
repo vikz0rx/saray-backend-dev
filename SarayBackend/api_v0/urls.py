@@ -8,7 +8,7 @@ router.register(r'news', NewsViewSet)
 urlpatterns = router.urls
 
 urlpatterns += [
-    path('registration/', RegistrationAPIView.as_view()),
+    path('register/', RegistrationAPIView.as_view()),
     path('login/', LoginAPIView.as_view()),
     path('user/', UserRetrieveUpdateAPIView.as_view()),
 ]

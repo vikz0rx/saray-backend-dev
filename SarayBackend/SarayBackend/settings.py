@@ -10,13 +10,14 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
+    'jet',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'main',
+    'main.apps.MainConfig',
     'api_v0',
     'corsheaders',
     'rest_framework',
@@ -140,3 +141,8 @@ MEDIUM_EDITOR_OPTIONS = {
         'cleanTags': ['meta']
     }
 }
+
+#JET
+
+JET_DEFAULT_THEME = 'light-blue'
+JET_SIDE_MENU_COMPACT = True

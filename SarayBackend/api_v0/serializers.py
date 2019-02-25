@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import Group
 from rest_framework import serializers
 from main.models import News, SarayUser
 
@@ -17,7 +18,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         fields = ['email', 'username', 'password', 'token']
 
     def create(self, validated_data):
-        return SarayUser.objects.create_user(**validated_data)
+        user = SarayUser.objects.create_user(**validated_data)
+        customer = Group.objects.get(name='saray_customer')
+        customer.user_set.add(user)
+        
+        return user
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)

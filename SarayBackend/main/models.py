@@ -68,6 +68,10 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
 
         return token.decode('utf-8')
 
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = _('Пользователи')
+
 class News(models.Model):
     title = models.CharField(_('title'), max_length=128)
     text = models.TextField(_('text'), max_length=4096)
@@ -79,4 +83,4 @@ class News(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name = _('news')
+        verbose_name_plural = _('Новости')
