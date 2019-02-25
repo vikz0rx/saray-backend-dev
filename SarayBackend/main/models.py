@@ -46,7 +46,7 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
     objects = SarayUserManager()
 
     def __str__(self):
-        return self.email
+        return self.username
 
     @property
     def token(self):
@@ -73,14 +73,17 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = _('Пользователи')
 
 class News(models.Model):
-    title = models.CharField(_('title'), max_length=128)
-    text = models.TextField(_('text'), max_length=4096)
-    image = models.FileField(_('image'), upload_to='news')
-    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    author = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='author', blank = True, null = True)
+    title = models.CharField(_('Заголовок'), max_length=128)
+    text = models.TextField(_('Текст статьи'), max_length=4096)
+    image = models.FileField(_('Обложка'), upload_to='news')
+    approved = models.BooleanField(_('Одобрено'), default=False)
+    created_at = models.DateTimeField(_('Дата создания'), auto_now_add=True)
 
     def __str__(self):
         return self.title
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = _('новость')
         verbose_name_plural = _('Новости')
