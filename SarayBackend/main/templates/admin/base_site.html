@@ -1,0 +1,48 @@
+{% extends "admin/base_site.html" %}
+{% block extrahead %}
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700&amp;subset=cyrillic" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Roboto Condensed', sans-serif;
+        }
+
+        #branding.initialized {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #site-name a {
+            color: #C0CAD8 !important;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .quiet {
+            display: block;
+
+            font-size: .9rem;
+        }
+
+        .module h2 a, .module caption a, .inline-group h2 a, #recent-actions-module > h2 {
+            font-size: 1.1rem;
+        }
+
+        .sidebar-title-link {
+            font-size: 1.1rem;
+        }
+
+        .sidebar-link-label {
+            font-size: .9rem;
+        }
+
+        .sidebar-section.last {
+            visibility: hidden;
+        }
+
+        .sidebar-dependent {
+            transition: all .25s linear;
+        }
+    </style>
+{% endblock %}

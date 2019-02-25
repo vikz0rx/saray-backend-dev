@@ -5,9 +5,9 @@ from .views import *
 router = DefaultRouter()
 router.register(r'news', NewsViewSet)
 router.register(r'locations', LocationsViewSet)
+router.register(r'photographs', PhotographsViewSet)
 router.register(r'booking/types', BookingTypesViewSet)
 router.register(r'booking/options', BookingOptionsViewSet)
-router.register(r'photographs', PhotographsViewSet)
 
 urlpatterns = router.urls
 
