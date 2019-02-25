@@ -61,6 +61,12 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
    def get_serializer_class(self):
        return LocationsDetailSerializer
 
+class PhotographsViewSet(viewsets.ReadOnlyModelViewSet):
+   queryset = Photographs.objects.all()
+
+   def get_serializer_class(self):
+       return PhotographsDetailSerializer
+
 class NewsViewSet(viewsets.ReadOnlyModelViewSet):
    queryset = News.objects.all()
 

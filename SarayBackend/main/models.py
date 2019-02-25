@@ -85,6 +85,20 @@ class Locations(models.Model):
         verbose_name = _('локация')
         verbose_name_plural = _('Локации')
 
+class Photographs(models.Model):
+    first_name = models.CharField(max_length=32)
+    last_name = models.CharField(max_length=32)
+    desc = models.CharField(max_length=64)
+    link = models.CharField(max_length=64)
+    image = models.FileField(upload_to='photographs')
+
+    def __str__(self):
+        return self.first_name + ' ' + self.last_name
+
+    class Meta:
+        verbose_name = _('фотограф')
+        verbose_name_plural = _('Фотографы')
+
 class News(models.Model):
     author = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='author', blank = True, null = True)
     title = models.CharField(_('Заголовок'), max_length=128)

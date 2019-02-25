@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import Group
 from rest_framework import serializers
-from main.models import Locations, News, SarayUser
+from main.models import Locations, Photographs,News, SarayUser
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -96,6 +96,17 @@ class LocationsDetailSerializer(serializers.ModelSerializer):
            'text',
            'image',
            'cost',
+       ]
+
+class PhotographsDetailSerializer(serializers.ModelSerializer):
+   class Meta:
+       model = Photographs
+       fields = [
+           'first_name',
+           'last_name',
+           'desc',
+           'link',
+           'image',
        ]
 
 class NewsPreviewSerializer(serializers.ModelSerializer):

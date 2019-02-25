@@ -1,6 +1,6 @@
 from django.contrib import admin
 from mediumeditor.admin import MediumEditorAdmin
-from .models import SarayUser,Locations, News
+from .models import SarayUser, Locations, Photographs, News
 
 @admin.register(SarayUser)
 class SarayUserAdmin(admin.ModelAdmin):
@@ -12,10 +12,14 @@ class LocationsAdmin(MediumEditorAdmin, admin.ModelAdmin):
 
     mediumeditor_fields = ('text', )
 
+@admin.register(Photographs)
+class PhotographsAdmin(admin.ModelAdmin):
+    list_display = ['link' ,'first_name', 'last_name', 'desc']
+
 @admin.register(News)
 class NewsAdmin(MediumEditorAdmin, admin.ModelAdmin):
     exclude = ('author',)
-    list_display = ['author','title', 'created_at', 'approved']
+    list_display = ['author', 'title', 'created_at', 'approved']
 
     mediumeditor_fields = ('text', )
 
