@@ -4,7 +4,7 @@ from .models import *
 
 @admin.register(SarayUser)
 class SarayUserAdmin(admin.ModelAdmin):
-    list_display = ['email', 'created_at']
+    list_display = ['firstname', 'lastname', 'email', 'birthdate']
 
 @admin.register(Locations)
 class LocationsAdmin(MediumEditorAdmin, admin.ModelAdmin):
@@ -12,25 +12,12 @@ class LocationsAdmin(MediumEditorAdmin, admin.ModelAdmin):
 
     mediumeditor_fields = ('text', )
 
-@admin.register(Bookings)
-class BookingsAdmin(admin.ModelAdmin):
-    list_display = ['date', 'location', 'time_start', 'time_end']
-
-@admin.register(BookingOptions)
-class BookingOptionsAdmin(admin.ModelAdmin):
-    list_display = ['title', 'desc', 'cost']
-
-@admin.register(BookingTypes)
-class BookingTypesAdmin(admin.ModelAdmin):
-    list_display = ['title', 'desc', 'cost']
-
 @admin.register(Photographs)
 class PhotographsAdmin(admin.ModelAdmin):
     list_display = ['link', 'first_name', 'last_name', 'desc']
 
 @admin.register(News)
 class NewsAdmin(MediumEditorAdmin, admin.ModelAdmin):
-    exclude = ('author',)
     list_display = ['author', 'title', 'created_at', 'approved']
 
     mediumeditor_fields = ('text', )
@@ -48,6 +35,7 @@ class NewsAdmin(MediumEditorAdmin, admin.ModelAdmin):
     def queryset(self, request):
         if request.user.is_superuser:
             return Entry.objects.all()
+        print(request.user)
         return Entry.objects.filter(author=request.user)
 
     def has_change_permission(self, request, obj=None):
@@ -65,3 +53,15 @@ class NewsAdmin(MediumEditorAdmin, admin.ModelAdmin):
         if obj is not None and not request.user.is_superuser and request.user.id != obj.author.id:
             return False
         return True
+
+@admin.register(BookingTypes)
+class BookingTypesAdmin(admin.ModelAdmin):
+    list_display = ['title', 'desc', 'cost']
+
+@admin.register(BookingOptions)
+class BookingOptionsAdmin(admin.ModelAdmin):
+    list_display = ['title', 'desc', 'cost']
+
+@admin.register(Bookings)
+class BookingsAdmin(admin.ModelAdmin):
+    list_display = ['date', 'location', 'time_start', 'time_end']

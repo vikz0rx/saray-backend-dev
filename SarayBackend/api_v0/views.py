@@ -1,12 +1,12 @@
+import datetime
 from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import *
 from .renderers import UserJSONRenderer
-import datetime
+from .serializers import *
 
 class RegistrationAPIView(APIView):
     permission_classes = (AllowAny,)
@@ -57,10 +57,36 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
-   queryset = Locations.objects.all()
+    queryset = Locations.objects.all()
 
-   def get_serializer_class(self):
-       return LocationsDetailSerializer
+    def get_serializer_class(self):
+        return LocationsDetailSerializer
+
+class PhotographsViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Photographs.objects.all()
+
+    def get_serializer_class(self):
+        return PhotographsDetailSerializer
+
+class NewsViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = News.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return NewsPreviewSerializer
+        return NewsDetailSerializer
+
+class BookingTypesViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = BookingTypes.objects.all()
+
+    def get_serializer_class(self):
+        return BookingTypesDetailSerializer
+
+class BookingOptionsViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = BookingOptions.objects.all()
+
+    def get_serializer_class(self):
+        return BookingOptionsDetailSerializer
 
 class BookingsRentTimeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Bookings.objects.all()
@@ -89,29 +115,3 @@ class BookingsViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'list':
             return BookingsPreviewSerializer
         return BookingsDetailSerializer
-
-class BookingOptionsViewSet(viewsets.ReadOnlyModelViewSet):
-   queryset = BookingOptions.objects.all()
-
-   def get_serializer_class(self):
-       return BookingOptionsDetailSerializer
-
-class BookingTypesViewSet(viewsets.ReadOnlyModelViewSet):
-   queryset = BookingTypes.objects.all()
-
-   def get_serializer_class(self):
-       return BookingTypesDetailSerializer
-
-class PhotographsViewSet(viewsets.ReadOnlyModelViewSet):
-   queryset = Photographs.objects.all()
-
-   def get_serializer_class(self):
-       return PhotographsDetailSerializer
-
-class NewsViewSet(viewsets.ReadOnlyModelViewSet):
-   queryset = News.objects.all()
-
-   def get_serializer_class(self):
-       if self.action == 'list':
-           return NewsPreviewSerializer
-       return NewsDetailSerializer

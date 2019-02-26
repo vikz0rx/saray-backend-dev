@@ -3,7 +3,6 @@ from django.contrib.auth.models import Group
 from rest_framework import serializers
 from main.models import *
 
-
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         max_length=128,
@@ -109,18 +108,38 @@ class PhotographsDetailSerializer(serializers.ModelSerializer):
             'image',
         ]
 
-class BookingOptionsDetailSerializer(serializers.ModelSerializer):
+class NewsPreviewSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BookingOptions
+        model = News
+        fields = [
+            'id',
+            'title',
+            'image',
+            'created_at',
+        ]
+
+
+class NewsDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = News
+        fields = [
+            'title',
+            'image',
+            'created_at',
+        ]
+
+class BookingTypesDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookingTypes
         fields = [
             'title',
             'desc',
             'cost',
         ]
 
-class BookingTypesDetailSerializer(serializers.ModelSerializer):
+class BookingOptionsDetailSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BookingTypes
+        model = BookingOptions
         fields = [
             'title',
             'desc',
@@ -140,10 +159,11 @@ class BookingsPreviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bookings
         fields = [
-            'id',
             'date',
             'time_start',
             'time_end',
+            'location',
+            'photograph',
         ]
 
 class BookingsDetailSerializer(serializers.ModelSerializer):
@@ -157,24 +177,4 @@ class BookingsDetailSerializer(serializers.ModelSerializer):
             'photograph',
             'types',
             'options',
-        ]
-
-class NewsPreviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = News
-        fields = [
-            'id',
-            'title',
-            'image',
-            'created_at',
-        ]
-
-
-class NewsDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = News
-        fields = [
-            'title',
-            'image',
-            'created_at',
         ]
