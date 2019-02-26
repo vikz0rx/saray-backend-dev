@@ -122,7 +122,7 @@ class Photographs(models.Model):
 
     class Meta:
         verbose_name = _('фотографа')
-        verbose_name_plural = _('Фотографы')
+        verbose_name_plural = _('Фотографа')
 
 class News(models.Model):
     author = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='author', blank = True, null = True)
@@ -139,3 +139,19 @@ class News(models.Model):
         ordering = ['-created_at']
         verbose_name = _('новость')
         verbose_name_plural = _('Новости')
+
+class Bookings(models.Model):
+    date = models.DateField()
+    time_start = models.TimeField(blank=True, null=True)
+    time_end = models.TimeField(blank=True, null=True)
+    location = models.ForeignKey(Locations, on_delete=models.CASCADE, related_name='location')
+    photograph = models.ForeignKey(Photographs, on_delete=models.CASCADE, blank=True, related_name='photograph')
+    types = models.ForeignKey(BookingTypes, on_delete=models.CASCADE, blank=True, related_name='type')
+    options = models.ManyToManyField(BookingOptions, blank=True)
+
+    def __str__(self):
+        return str(self.date)
+
+    class Meta:
+        verbose_name = _('бронирование')
+        verbose_name_plural = _('Бронирования')

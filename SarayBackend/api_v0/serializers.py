@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import Group
 from rest_framework import serializers
-from main.models import Locations, BookingOptions, BookingTypes, Photographs,News, SarayUser
+from main.models import *
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -89,62 +89,92 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 class LocationsDetailSerializer(serializers.ModelSerializer):
-   class Meta:
-       model = Locations
-       fields = [
-           'title',
-           'text',
-           'image',
-           'cost',
-       ]
+    class Meta:
+        model = Locations
+        fields = [
+            'title',
+            'text',
+            'image',
+            'cost',
+        ]
 
 class PhotographsDetailSerializer(serializers.ModelSerializer):
-   class Meta:
-       model = Photographs
-       fields = [
-           'first_name',
-           'last_name',
-           'desc',
-           'link',
-           'image',
-       ]
+    class Meta:
+        model = Photographs
+        fields = [
+            'first_name',
+            'last_name',
+            'desc',
+            'link',
+            'image',
+        ]
 
 class BookingOptionsDetailSerializer(serializers.ModelSerializer):
-   class Meta:
-       model = BookingOptions
-       fields = [
-           'title',
-           'desc',
-           'cost',
-       ]
+    class Meta:
+        model = BookingOptions
+        fields = [
+            'title',
+            'desc',
+            'cost',
+        ]
 
 class BookingTypesDetailSerializer(serializers.ModelSerializer):
-   class Meta:
-       model = BookingTypes
-       fields = [
-           'title',
-           'desc',
-           'cost',
-       ]
+    class Meta:
+        model = BookingTypes
+        fields = [
+            'title',
+            'desc',
+            'cost',
+        ]
+
+class BookingsRentTimeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bookings
+        fields = [
+            'date',
+            'time_start',
+            'time_end',
+        ]
+
+class BookingsPreviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bookings
+        fields = [
+            'id',
+            'date',
+            'time_start',
+            'time_end',
+        ]
+
+class BookingsDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bookings
+        fields = [
+            'date',
+            'time_start',
+            'time_end',
+            'location',
+            'photograph',
+            'types',
+            'options',
+        ]
 
 class NewsPreviewSerializer(serializers.ModelSerializer):
-   class Meta:
-       model = News
-       fields = [
-           'id',
-           'title',
-           'image',
-           'created_at',
-           'url',
-       ]
+    class Meta:
+        model = News
+        fields = [
+            'id',
+            'title',
+            'image',
+            'created_at',
+        ]
 
 
 class NewsDetailSerializer(serializers.ModelSerializer):
-   class Meta:
-       model = News
-       fields = [
-           'title',
-           'image',
-           'created_at',
-           'url',
-       ]
+    class Meta:
+        model = News
+        fields = [
+            'title',
+            'image',
+            'created_at',
+        ]

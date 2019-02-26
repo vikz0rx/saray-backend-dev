@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import *
 from .renderers import UserJSONRenderer
+import datetime
 
 class RegistrationAPIView(APIView):
     permission_classes = (AllowAny,)
@@ -60,6 +61,34 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
 
    def get_serializer_class(self):
        return LocationsDetailSerializer
+
+class BookingsRentTimeViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Bookings.objects.all()
+    serializer_class = BookingsRentTimeSerializer
+
+    def get_queryset(self):
+        if (len(self.request.GET) >= 3):
+            date = self.request.GET
+            year = int(date['year'])
+            month = int(date['month'])
+            day = int(date['day'])
+        else:
+            date = datetime.datetime.today()
+
+            year = date.year
+            month = date.month
+            day = date.day
+
+        return Bookings.objects.filter(date=datetime.date(year, month, day))
+
+class BookingsViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = Bookings.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return BookingsPreviewSerializer
+        return BookingsDetailSerializer
 
 class BookingOptionsViewSet(viewsets.ReadOnlyModelViewSet):
    queryset = BookingOptions.objects.all()

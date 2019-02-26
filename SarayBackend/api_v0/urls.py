@@ -6,6 +6,8 @@ router = DefaultRouter()
 router.register(r'news', NewsViewSet)
 router.register(r'locations', LocationsViewSet)
 router.register(r'photographs', PhotographsViewSet)
+router.register(r'booking', BookingsViewSet)
+router.register(r'booking/rent', BookingsRentTimeViewSet)
 router.register(r'booking/types', BookingTypesViewSet)
 router.register(r'booking/options', BookingOptionsViewSet)
 
