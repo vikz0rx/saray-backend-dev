@@ -6,6 +6,16 @@
             font-family: 'Roboto Condensed', sans-serif;
         }
 
+        body.login {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         #branding.initialized {
             display: flex;
             flex-direction: row;
@@ -17,6 +27,12 @@
             color: #C0CAD8 !important;
             font-size: 1.2rem;
             font-weight: 700;
+        }
+
+        ul.message_list {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
         }
 
         .quiet {
@@ -44,5 +60,31 @@
         .sidebar-dependent {
             transition: all .25s linear;
         }
+
+        .field-image_tag img {
+            width: 100px;
+            height: auto;
+        }
+
+        img[src$="admin/img/icon-yes.svg"]+span {
+            color: #2980B9;
+        }
+
+        img[src$="admin/img/icon-no.svg"]+span {
+            color: #F34336;
+        }
     </style>
+    {% comment %} <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#result_list tr td:nth-child(10)').each(function() {
+                if ($(this).text() != 'Оплачен') {
+                    $(this).parent().css('background-color', 'rgba(243, 67, 54, .1)');
+                }
+                else {
+                    $(this).parent().css('background-color', 'rgba(138, 194, 75, .1)');
+                }
+            });
+        });
+    </script> {% endcomment %}
 {% endblock %}
