@@ -24,27 +24,37 @@ class SarayUserAdmin(admin.ModelAdmin):
 
     list_display = ['name_refactored', 'phone_refactored', 'email', 'birthdate']
     search_fields = ('lastname', )
+    exclude = ('last_login', )
 
     def get_form(self, request, obj=None, **kwargs):
-        if not request.user.is_superuser:
-            self.exclude = ('username', 'is_superuser', 'user_permissions', 'groups', 'password', 'is_active', 'is_staff', 'last_login')
-        else:
-            self.exclude = ('password', 'user_permissions', 'last_login')
+        if obj:
+            self.exclude += ('last_login', )
 
-        if obj.is_staff:
-            self.exclude += ('sms_notification', 'mail_notification', 'allow_to_use_photos')
+            if obj.is_staff:
+                self.exclude += ('bonus', 'birthdate', 'passport_series', 'passport_number', 'insurance', 'sms_notification', 'mail_notification', 'allow_to_use_photos', )
 
         return super(SarayUserAdmin, self).get_form(request, obj, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):
+        readonly_fields = ('last_login', 'is_superuser', 'is_staff', 'groups', )
+        not_user_fields = ('username', 'email', 'phone', 'image', 'firstname', 'lastname', 'fathersname', 'birthdate', 'passport_series', 'passport_number', 'insurance', )
+        notification_fields = ('sms_notification', 'mail_notification', 'allow_to_use_photos', )
+
         if obj:
             if request.user != obj:
-                if obj.is_staff:
-                    return ('last_login', 'username', 'email', 'phone', 'image', 'firstname', 'lastname', 'fathersname', 'birthdate', 'passport_series', 'passport_number', 'insurance', 'is_superuser', 'is_staff', 'groups', )
+                if request.user.is_superuser:
+                    return not_user_fields + notification_fields + readonly_fields
+                elif request.user.is_staff:
+                    return not_user_fields + ('bonus', ) + notification_fields + readonly_fields + ('is_active', )
                 else:
-                    return ('last_login', 'username', 'email', 'phone', 'image', 'firstname', 'lastname', 'fathersname', 'birthdate', 'passport_series', 'passport_number', 'insurance', 'sms_notification', 'mail_notification', 'allow_to_use_photos', 'is_superuser', 'is_staff', 'groups', )
+                    return not_user_fields + ('bonus', ) + notification_fields + readonly_fields + ('is_active', )
             else:
-                return ('last_login', 'is_superuser', 'is_staff', 'groups', )
+                if request.user.is_superuser:
+                    return readonly_fields
+                elif request.user.is_staff:
+                    return readonly_fields
+                else:
+                    return readonly_fields
         else:
             return []
 
@@ -143,6 +153,27 @@ class BookingsAdmin(admin.ModelAdmin):
 
         obj.save()
 
+
+        # BONUS CARD SELECTION
+
+        overall_sum = 0
+
+        for item in Bookings.objects.filter(user=obj.user):
+            overall_sum += item.cost
+
+        if overall_sum >= 70000:
+            obj.user.bonus = SarayUser.BONUS_PLATINUM
+            obj.user.save()
+        elif overall_sum >= 50000:
+            obj.user.bonus = SarayUser.BONUS_GOLD
+            obj.user.save()
+        elif overall_sum >= 30000:
+            obj.user.bonus = SarayUser.BONUS_SILVER
+            obj.user.save()
+        else:
+            obj.user.bonus = SarayUser.BONUS_CLASSIC
+            obj.user.save()
+
     actions = ['send_notification']
-    list_display = ['date', 'location', 'image_tag', 'time_start', 'time_end', 'payment_notification', 'reminder_notification', 'cost', 'status']
-    readonly_fields = ('payment_notification', 'reminder_notification', 'cost', )
+    list_display = ['user', 'date', 'location', 'image_tag', 'time_start', 'time_end', 'payment_notification', 'reminder_notification', 'cost', 'status']
+    readonly_fields = ('payment_notification', 'reminder_notification', 'cost', ) # 'user'

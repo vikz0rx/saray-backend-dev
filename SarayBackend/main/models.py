@@ -32,6 +32,19 @@ class SarayUserManager(BaseUserManager):
         return user
 
 class SarayUser(AbstractBaseUser, PermissionsMixin):
+    BONUS_CLASSIC = "CLASSIC"
+    BONUS_SILVER = "SILVER"
+    BONUS_GOLD = "GOLD"
+    BONUS_PLATINUM = "PLATINUM"
+
+    BONUS_CHOICES = (
+        (BONUS_CLASSIC, "Классическая карта"),
+        (BONUS_SILVER, "Серебряная карта"),
+        (BONUS_GOLD, "Золотая карта"),
+        (BONUS_PLATINUM, "Платиновая карта"),
+    )
+
+    bonus = models.CharField(_('Бонусная карта'), max_length=32, choices=BONUS_CHOICES, default=BONUS_CLASSIC)
     username = models.CharField(_('Имя пользователя'), db_index=True, max_length=255, unique=True)
     email = models.EmailField(_('Электропочта'), db_index=True, unique=True)
     phone = models.CharField(_('Номер телефона'), max_length=11, null=True, blank=True)
@@ -172,6 +185,7 @@ class Bookings(models.Model):
     )
 
 
+    user = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='customer', blank = True, null = True)
     date = models.DateField()
     time_start = models.TimeField(_('Начало'), blank=True, null=True)
     time_end = models.TimeField(_('Конец'), blank=True, null=True)

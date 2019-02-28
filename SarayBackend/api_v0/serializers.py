@@ -113,6 +113,7 @@ class NewsPreviewSerializer(serializers.ModelSerializer):
         model = News
         fields = [
             'id',
+            'author',
             'title',
             'image',
             'created_at',
@@ -123,6 +124,7 @@ class NewsDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = [
+            'author',
             'title',
             'image',
             'created_at',
@@ -153,6 +155,7 @@ class BookingsRentTimeSerializer(serializers.ModelSerializer):
             'date',
             'time_start',
             'time_end',
+            'status',
         ]
 
 class BookingsPreviewSerializer(serializers.ModelSerializer):
@@ -163,7 +166,7 @@ class BookingsPreviewSerializer(serializers.ModelSerializer):
             'time_start',
             'time_end',
             'location',
-            'photograph',
+            'status',
         ]
 
 class BookingsDetailSerializer(serializers.ModelSerializer):
@@ -173,8 +176,10 @@ class BookingsDetailSerializer(serializers.ModelSerializer):
             'date',
             'time_start',
             'time_end',
+            'status',
             'location',
             'photograph',
             'types',
             'options',
+            'cost',
         ]
