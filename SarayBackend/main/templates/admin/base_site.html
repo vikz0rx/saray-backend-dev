@@ -45,6 +45,10 @@
             font-size: 1.1rem;
         }
 
+        .sidebar-title {
+            text-align: center;
+        }
+
         .sidebar-title-link {
             font-size: 1.1rem;
         }
@@ -74,17 +78,26 @@
             color: #F34336;
         }
     </style>
-    {% comment %} <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script type="text/javascript">
         $(document).ready(function() {
-            $('#result_list tr td:nth-child(10)').each(function() {
+            /* $('#result_list tr td:nth-child(10)').each(function() {
                 if ($(this).text() != 'Оплачен') {
                     $(this).parent().css('background-color', 'rgba(243, 67, 54, .1)');
                 }
                 else {
                     $(this).parent().css('background-color', 'rgba(138, 194, 75, .1)');
                 }
-            });
+            }); */
+            
+            vk_link = '<a href="http://vk.com/" class="sidebar-link icon"><span class="sidebar-link-label">VK</span></a>'
+            insta_link = '<a href="http://instagram.com/" class="sidebar-link icon"><span class="sidebar-link-label">INSTAGRAM</span></a>'
+
+            $('.sidebar-wrapper').find('.sidebar-section:first .sidebar-link.icon span:contains("Начало")').text('Главная страница');
+            $('.sidebar-wrapper').find('.sidebar-section:first .sidebar-link.icon span:contains("Открыть сайт")').text('Сайт');
+
+            $('.sidebar-wrapper').find('.sidebar-section:first .sidebar-link.icon span span').remove();
+            $('.sidebar-wrapper').find('.sidebar-section:first').append(vk_link, insta_link);
         });
-    </script> {% endcomment %}
+    </script>
 {% endblock %}

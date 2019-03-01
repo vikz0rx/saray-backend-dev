@@ -147,52 +147,54 @@ class BookingOptionsAdmin(admin.ModelAdmin):
 
 @admin.register(Bookings)
 class BookingsAdmin(admin.ModelAdmin):
+    def image_tag(self, obj):
+        return format_html('<img src="{}" />'.format(obj.location.image.url))
+
+    image_tag.short_description = ''
+
     def send_notification(self, request, queryset):
         print(request)
         print(queryset)
     
     send_notification.short_description = "Отправить дополнительное уведомление"
 
-    def image_tag(self, obj):
-        return format_html('<img src="{}" />'.format(obj.location.image.url))
-
-    image_tag.short_description = ''
-
     def save_model(self, request, obj, form, change):
         if not change:
-            # SEND SMS / MAIL NOTIFICATION FUNCTION
-            obj.payment_notification = True
+            obj.save()
 
-            # CALCULATE SUM FUNCTION
-            sum = 0
-            sum += obj.location.cost 
-            sum += obj.types.cost 
-            # SUM SELECTED OPTIONS
-            # print(obj.options.all())
-            obj.cost = sum
+            # BOOKING COST CALCULATION
+            cost = 0
+            cost += obj.location.cost 
+            cost += obj.types.cost 
+            for item in obj.options.all():
+                cost += item.cost
+            if obj.photograph:
+                cost += obj.photograph.cost
+            obj.cost = cost
+
+            # SEND SMS / MAIL NOTIFICATION
+            obj.payment_notification = True
+            
+            # BONUS AMOUNT CALCULATING
+            obj.user.bonus_amount = obj.user.bonus_amount + int(obj.cost * {SarayUser.BONUS_CLASSIC: .03, SarayUser.BONUS_SILVER: .07, SarayUser.BONUS_GOLD: .15, SarayUser.BONUS_PLATINUM: .20}.get(obj.user.bonus))
+
+            # BONUS CARD SELECTION
+            overall_user_sum = 0
+            for item in Bookings.objects.filter(user=obj.user):
+                overall_user_sum += item.cost
+
+            if overall_user_sum >= 300000:
+                obj.user.bonus = SarayUser.BONUS_PLATINUM
+            elif overall_user_sum >= 200000:
+                obj.user.bonus = SarayUser.BONUS_GOLD
+            elif overall_user_sum >= 100000:
+                obj.user.bonus = SarayUser.BONUS_SILVER
+            else:
+                obj.user.bonus = SarayUser.BONUS_CLASSIC
+
+            obj.user.save()
 
         obj.save()
-
-
-        # BONUS CARD SELECTION
-
-        overall_sum = 0
-
-        for item in Bookings.objects.filter(user=obj.user):
-            overall_sum += item.cost
-
-        if overall_sum >= 70000:
-            obj.user.bonus = SarayUser.BONUS_PLATINUM
-            obj.user.save()
-        elif overall_sum >= 50000:
-            obj.user.bonus = SarayUser.BONUS_GOLD
-            obj.user.save()
-        elif overall_sum >= 30000:
-            obj.user.bonus = SarayUser.BONUS_SILVER
-            obj.user.save()
-        else:
-            obj.user.bonus = SarayUser.BONUS_CLASSIC
-            obj.user.save()
 
     actions = ['send_notification']
     list_display = ['user', 'date', 'location', 'image_tag', 'time_start', 'time_end', 'payment_notification', 'reminder_notification', 'cost', 'status']

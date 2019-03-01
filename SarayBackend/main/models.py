@@ -1,4 +1,5 @@
 import jwt
+
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -45,6 +46,7 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
     )
 
     bonus = models.CharField(_('Бонусная карта'), max_length=32, choices=BONUS_CHOICES, default=BONUS_CLASSIC)
+    bonus_amount = models.SmallIntegerField(_('Бонусные баллы'), default=0)
     username = models.CharField(_('Имя пользователя'), db_index=True, max_length=255, unique=True)
     email = models.EmailField(_('Электропочта'), db_index=True, unique=True)
     phone = models.CharField(_('Номер телефона'), max_length=11, null=True, blank=True)
@@ -126,6 +128,7 @@ class Photographs(models.Model):
     last_name = models.CharField(_('Фамилия'), max_length=32)
     desc = models.CharField(_('Описание'), max_length=64)
     link = models.CharField(_('Instagram'), max_length=64)
+    cost = models.SmallIntegerField(_('Стоимость'), default=1000)
     image = models.FileField(_('Фотография'), upload_to='headshots')
 
     def __str__(self):
@@ -192,7 +195,7 @@ class Bookings(models.Model):
     status = models.CharField(_('Статус'), max_length=16, choices=STATUS_CHOICES, default=IS_CREATED)
     
     location = models.ForeignKey(Locations, on_delete=models.CASCADE, related_name='location')
-    photograph = models.ForeignKey(Photographs, on_delete=models.CASCADE, blank=True, related_name='photograph')
+    photograph = models.ForeignKey(Photographs, on_delete=models.CASCADE, blank=True, null=True, related_name='photograph')
     types = models.ForeignKey(BookingTypes, on_delete=models.CASCADE, blank=True, related_name='type')
     options = models.ManyToManyField(BookingOptions, blank=True, related_name='options_choice')
 

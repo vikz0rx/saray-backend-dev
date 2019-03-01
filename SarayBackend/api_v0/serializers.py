@@ -1,20 +1,22 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import Group
+
 from rest_framework import serializers
+
 from main.models import *
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(
-        max_length=128,
-        min_length=8,
-        write_only=True
-    )
-
+    password = serializers.CharField(max_length=128, min_length=8, write_only=True)
     token = serializers.CharField(max_length=255, read_only=True)
 
     class Meta:
         model = SarayUser
-        fields = ['email', 'username', 'password', 'token']
+        fields = [
+            'email',
+            'username',
+            'password',
+            'token'
+        ]
 
     def create(self, validated_data):
         user = SarayUser.objects.create_user(**validated_data)
@@ -70,8 +72,25 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SarayUser
-        fields = ('email', 'username', 'password', 'token',)
-        read_only_fields = ('token',)
+        fields = [
+            'email',
+            'username',
+            'password',
+            'image',
+            'phone',
+            'firstname',
+            'lastname',
+            'fathersname',
+            'birthdate',
+            'passport_series',
+            'passport_number',
+            'insurance',
+            'sms_notification',
+            'mail_notification',
+            'allow_to_use_photos',
+            'bonus',
+            'bonus_amount',
+        ]
 
 
     def update(self, instance, validated_data):
