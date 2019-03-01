@@ -220,3 +220,35 @@ class Bookings(models.Model):
 # )
 
 # status = models.CharField(_('Статус'), max_length=16, choices=STATUS_CHOICES, default=IS_PAYED)
+
+class MultipleImageLocations(models.Model):
+    relation = models.ForeignKey(Locations, on_delete=models.CASCADE, related_name='examples')
+    image = models.FileField(_('Изображение'), upload_to='locations')
+
+    class Meta:
+        verbose_name = _('фотографию студии')
+        verbose_name_plural = _('Фотографии студии')
+
+class MultipleImagePhotographs(models.Model):
+    relation = models.ForeignKey(Photographs, on_delete=models.CASCADE, related_name='examples')
+    image = models.FileField(_('Изображение'), upload_to='news')
+
+    class Meta:
+        verbose_name = _('пример работы')
+        verbose_name_plural = _('Примеры работ')
+
+class MultipleRawImageBookings(models.Model):
+    relation = models.ForeignKey(Bookings, on_delete=models.CASCADE, related_name='photos_raw')
+    image = models.FileField(_('RAW'), upload_to='bookings/raw')
+
+    class Meta:
+        verbose_name = _('RAW-Фотографию')
+        verbose_name_plural = _('RAW-Фотографии')
+
+class MultipleProcessedImageBookings(models.Model):
+    relation = models.ForeignKey(Bookings, on_delete=models.CASCADE, related_name='photos_processed')
+    image = models.FileField(_('Ретушь'), upload_to='bookings/processed')
+
+    class Meta:
+        verbose_name = _('ретушированную фотографию')
+        verbose_name_plural = _('Ретушированные фотографии')

@@ -87,7 +87,16 @@ class UserSerializer(serializers.ModelSerializer):
 
         return instance
 
+class LocationsExampleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MultipleImageLocations
+        fields = [
+            'image',
+        ]
+
 class LocationsDetailSerializer(serializers.ModelSerializer):
+    example_images = LocationsExampleSerializer(source='examples', many=True)
+
     class Meta:
         model = Locations
         fields = [
@@ -95,9 +104,19 @@ class LocationsDetailSerializer(serializers.ModelSerializer):
             'text',
             'image',
             'cost',
+            'example_images',
+        ]
+
+class PhotographsExampleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MultipleImagePhotographs
+        fields = [
+            'image',
         ]
 
 class PhotographsDetailSerializer(serializers.ModelSerializer):
+    example_images = PhotographsExampleSerializer(source='examples', many=True)
+
     class Meta:
         model = Photographs
         fields = [
@@ -106,6 +125,7 @@ class PhotographsDetailSerializer(serializers.ModelSerializer):
             'desc',
             'link',
             'image',
+            'example_images',
         ]
 
 class NewsPreviewSerializer(serializers.ModelSerializer):
@@ -167,9 +187,27 @@ class BookingsPreviewSerializer(serializers.ModelSerializer):
             'time_end',
             'location',
             'status',
+            'url'
+        ]
+
+class BookingsRawPhotosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MultipleRawImageBookings
+        fields = [
+            'image',
+        ]
+
+class BookingsProcessedPhotosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MultipleProcessedImageBookings
+        fields = [
+            'image',
         ]
 
 class BookingsDetailSerializer(serializers.ModelSerializer):
+    booking_raw_photos = BookingsRawPhotosSerializer(source='photos_raw', many=True)
+    booking_processed_photos = BookingsProcessedPhotosSerializer(source='photos_processed', many=True)
+
     class Meta:
         model = Bookings
         fields = [
@@ -182,4 +220,6 @@ class BookingsDetailSerializer(serializers.ModelSerializer):
             'types',
             'options',
             'cost',
+            'booking_raw_photos',
+            'booking_processed_photos',
         ]

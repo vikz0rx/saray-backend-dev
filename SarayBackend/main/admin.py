@@ -3,6 +3,22 @@ from django.utils.html import format_html
 from mediumeditor.admin import MediumEditorAdmin
 from .models import *
 
+class MultipleImagePhotographsInline(admin.TabularInline):
+    model = MultipleImagePhotographs
+    extra = 5
+
+class MultipleImageLocationsInline(admin.TabularInline):
+    model = MultipleImageLocations
+    extra = 5
+
+class MultipleRawImageBookingsInline(admin.TabularInline):
+    model = MultipleRawImageBookings
+    extra = 5
+
+class MultipleProcessedImageBookingsInline(admin.TabularInline):
+    model = MultipleProcessedImageBookings
+    extra = 5
+
 @admin.register(SarayUser)
 class SarayUserAdmin(admin.ModelAdmin):
     def phone_refactored(self, obj):
@@ -24,16 +40,16 @@ class SarayUserAdmin(admin.ModelAdmin):
 
     list_display = ['name_refactored', 'phone_refactored', 'email', 'birthdate']
     search_fields = ('lastname', )
-    exclude = ('last_login', )
 
-    def get_form(self, request, obj=None, **kwargs):
+    def get_exclude(self, request, obj=None):
+        exclude = ('last_login', 'user_permissions')
+
         if obj:
-            self.exclude += ('last_login', )
-
             if obj.is_staff:
-                self.exclude += ('bonus', 'birthdate', 'passport_series', 'passport_number', 'insurance', 'sms_notification', 'mail_notification', 'allow_to_use_photos', )
-
-        return super(SarayUserAdmin, self).get_form(request, obj, **kwargs)
+                return exclude + ('bonus', 'birthdate', 'passport_series', 'passport_number', 'insurance', 'sms_notification', 'mail_notification', 'allow_to_use_photos', )
+            return exclude
+        else:
+            return exclude + ('password', )
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = ('last_login', 'is_superuser', 'is_staff', 'groups', )
@@ -50,11 +66,11 @@ class SarayUserAdmin(admin.ModelAdmin):
                     return not_user_fields + ('bonus', ) + notification_fields + readonly_fields + ('is_active', )
             else:
                 if request.user.is_superuser:
-                    return readonly_fields
+                    return readonly_fields + ('is_active', )
                 elif request.user.is_staff:
-                    return readonly_fields
+                    return readonly_fields + ('is_active', )
                 else:
-                    return readonly_fields
+                    return readonly_fields + ('is_active', )
         else:
             return []
 
@@ -67,11 +83,15 @@ class LocationsAdmin(MediumEditorAdmin, admin.ModelAdmin):
 
     list_display = ['title', 'image_tag']
 
+    inlines = [ MultipleImageLocationsInline, ]
+
     mediumeditor_fields = ('text', )
 
 @admin.register(Photographs)
 class PhotographsAdmin(admin.ModelAdmin):
     list_display = ['link', 'first_name', 'last_name', 'desc']
+
+    inlines = [ MultipleImagePhotographsInline, ]
 
 @admin.register(News)
 class NewsAdmin(MediumEditorAdmin, admin.ModelAdmin):
@@ -177,3 +197,5 @@ class BookingsAdmin(admin.ModelAdmin):
     actions = ['send_notification']
     list_display = ['user', 'date', 'location', 'image_tag', 'time_start', 'time_end', 'payment_notification', 'reminder_notification', 'cost', 'status']
     readonly_fields = ('payment_notification', 'reminder_notification', 'cost', ) # 'user'
+
+    inlines = [ MultipleRawImageBookingsInline, MultipleProcessedImageBookingsInline, ]
