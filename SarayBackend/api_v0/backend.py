@@ -1,6 +1,9 @@
 import jwt
+
 from django.conf import settings
+
 from rest_framework import authentication, exceptions
+
 from main.models import SarayUser
 
 class JWTAuthentication(authentication.BaseAuthentication):

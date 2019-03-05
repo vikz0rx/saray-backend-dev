@@ -15,7 +15,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'email',
             'username',
             'password',
-            'token'
+            'token',
         ]
 
     def create(self, validated_data):
@@ -64,23 +64,22 @@ class LoginSerializer(serializers.Serializer):
         }
 
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(
-        max_length=128,
-        min_length=8,
-        write_only=True
-    )
+    password = serializers.CharField(max_length=128, min_length=8, write_only=True)
+    sms_notification = serializers.BooleanField(read_only=True)
+    bonus = serializers.CharField(read_only=True)
+    bonus_amount = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = SarayUser
         fields = [
-            'email',
             'username',
             'password',
-            'image',
+            'email',
             'phone',
-            'firstname',
-            'lastname',
-            'fathersname',
+            'image',
+            'first_name',
+            'last_name',
+            'fathers_name',
             'birthdate',
             'passport_series',
             'passport_number',
@@ -113,16 +112,28 @@ class LocationsExampleSerializer(serializers.ModelSerializer):
             'image',
         ]
 
+class LocationsPreviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = News
+        fields = [
+            'id',
+            'title',
+            'image',
+        ]
+
 class LocationsDetailSerializer(serializers.ModelSerializer):
-    example_images = LocationsExampleSerializer(source='examples', many=True)
+    example_images = LocationsExampleSerializer(source='examples', many=True, read_only=True)
 
     class Meta:
         model = Locations
         fields = [
+            'id',
             'title',
             'text',
             'image',
             'cost',
+            'over_week_cost',
+            'over_time_cost',
             'example_images',
         ]
 
@@ -134,7 +145,7 @@ class PhotographsExampleSerializer(serializers.ModelSerializer):
         ]
 
 class PhotographsDetailSerializer(serializers.ModelSerializer):
-    example_images = PhotographsExampleSerializer(source='examples', many=True)
+    example_images = PhotographsExampleSerializer(source='examples', many=True, read_only=True)
 
     class Meta:
         model = Photographs
@@ -143,6 +154,7 @@ class PhotographsDetailSerializer(serializers.ModelSerializer):
             'last_name',
             'desc',
             'link',
+            'cost',
             'image',
             'example_images',
         ]
@@ -165,6 +177,7 @@ class NewsDetailSerializer(serializers.ModelSerializer):
         fields = [
             'author',
             'title',
+            'text',
             'image',
             'created_at',
         ]
@@ -194,19 +207,17 @@ class BookingsRentTimeSerializer(serializers.ModelSerializer):
             'date',
             'time_start',
             'time_end',
-            'status',
         ]
 
 class BookingsPreviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bookings
         fields = [
+            'id',
             'date',
             'time_start',
             'time_end',
             'location',
-            'status',
-            'url'
         ]
 
 class BookingsRawPhotosSerializer(serializers.ModelSerializer):
@@ -224,21 +235,23 @@ class BookingsProcessedPhotosSerializer(serializers.ModelSerializer):
         ]
 
 class BookingsDetailSerializer(serializers.ModelSerializer):
-    booking_raw_photos = BookingsRawPhotosSerializer(source='photos_raw', many=True)
-    booking_processed_photos = BookingsProcessedPhotosSerializer(source='photos_processed', many=True)
+    booking_raw_photos = BookingsRawPhotosSerializer(source='photos_raw', many=True, read_only=True)
+    booking_processed_photos = BookingsProcessedPhotosSerializer(source='photos_processed', many=True, read_only=True)
 
     class Meta:
         model = Bookings
         fields = [
+            'id',
             'date',
             'time_start',
             'time_end',
-            'status',
             'location',
             'photograph',
             'types',
             'options',
             'cost',
+            'bonus_used',
             'booking_raw_photos',
             'booking_processed_photos',
+            # 'contract',
         ]

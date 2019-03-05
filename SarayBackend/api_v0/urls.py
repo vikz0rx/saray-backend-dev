@@ -5,6 +5,7 @@ from rest_framework.routers import DefaultRouter
 from .views import *
 
 router = DefaultRouter()
+
 router.register(r'locations', LocationsViewSet)
 router.register(r'photographs', PhotographsViewSet)
 router.register(r'news', NewsViewSet)

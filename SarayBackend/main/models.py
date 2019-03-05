@@ -47,15 +47,15 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
 
     bonus = models.CharField(_('Бонусная карта'), max_length=32, choices=BONUS_CHOICES, default=BONUS_CLASSIC)
     bonus_amount = models.SmallIntegerField(_('Бонусные баллы'), default=0)
+
     username = models.CharField(_('Имя пользователя'), db_index=True, max_length=255, unique=True)
     email = models.EmailField(_('Электропочта'), db_index=True, unique=True)
     phone = models.CharField(_('Номер телефона'), max_length=11, null=True, blank=True)
     image = models.FileField(_('Изображение'), upload_to='headshots', null=True, blank=True)
     
-    firstname = models.CharField(_('Имя'), max_length=32, null=True, blank=True)
-    lastname = models.CharField(_('Фамилия'), max_length=32, null=True, blank=True)
-    fathersname = models.CharField(_('Отчество'), max_length=32, null=True, blank=True)
-
+    first_name = models.CharField(_('Имя'), max_length=32, null=True, blank=True)
+    last_name = models.CharField(_('Фамилия'), max_length=32, null=True, blank=True)
+    fathers_name = models.CharField(_('Отчество'), max_length=32, null=True, blank=True)
     birthdate = models.DateField(_('Дата рождения'), null=True, blank=True)
     
     passport_series = models.CharField(_('Серия паспорта'), max_length=4, null=True, blank=True)
@@ -73,15 +73,15 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
     updated_at = models.DateTimeField(_('Дата обновления'), auto_now=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ('username', )
 
     objects = SarayUserManager()
 
     def __str__(self):
-        if self.firstname and self.lastname and self.fathersname:
-            return self.firstname + ' ' + self.lastname + ' ' + self.fathersname
-        elif self.firstname and self.lastname:
-            return self.firstname + ' ' + self.lastname
+        if self.first_name and self.last_name and self.fathers_name:
+            return self.first_name + ' ' + self.last_name + ' ' + self.fathers_name
+        elif self.first_name and self.last_name:
+            return self.first_name + ' ' + self.last_name
         else:
             return self.username
 
@@ -90,10 +90,18 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
         return self._generate_jwt_token()
 
     def get_full_name(self):
-        return self.username
+        if self.first_name and self.last_name and self.fathers_name:
+            return self.first_name + ' ' + self.last_name + ' ' + self.fathers_name
+        elif self.first_name and self.last_name:
+            return self.first_name + ' ' + self.last_name
+        else:
+            return self.username
 
     def get_short_name(self):
-        return self.username
+        if self.first_name:
+            return self.first_name
+        else:
+            return self.username
 
     def _generate_jwt_token(self):
         dt = datetime.now() + timedelta(days=60)
@@ -106,7 +114,7 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
         return token.decode('utf-8')
 
     class Meta:
-        ordering = ['is_superuser', 'is_staff', '-created_at']
+        ordering = ('is_superuser', 'is_staff', '-created_at', )
         verbose_name = _('пользователя фотостудии')
         verbose_name_plural = _('Пользователи фотостудии')
 
@@ -114,7 +122,9 @@ class Locations(models.Model):
     title = models.CharField(_('Название локации'), max_length=32)
     text = models.TextField(_('Описание'), max_length=4096)
     image = models.FileField(_('Обложка'), upload_to='locations')
-    cost = models.SmallIntegerField(_('Стоимость аренды'), )
+    cost = models.SmallIntegerField(_('Стоимость аренды'), default=0)
+    over_week_cost = models.SmallIntegerField(_('Доп. стоимость (дни недели)'), default=0)
+    over_time_cost = models.SmallIntegerField(_('Доп. стоимость (позднее время)'), default=0)
 
     def __str__(self):
         return self.title
@@ -128,7 +138,7 @@ class Photographs(models.Model):
     last_name = models.CharField(_('Фамилия'), max_length=32)
     desc = models.CharField(_('Описание'), max_length=64)
     link = models.CharField(_('Instagram'), max_length=64)
-    cost = models.SmallIntegerField(_('Стоимость'), default=1000)
+    cost = models.SmallIntegerField(_('Стоимость'), default=0)
     image = models.FileField(_('Фотография'), upload_to='headshots')
 
     def __str__(self):
@@ -139,7 +149,7 @@ class Photographs(models.Model):
         verbose_name_plural = _('Фотографы')
 
 class News(models.Model):
-    author = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='author', blank = True, null = True)
+    author = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='author', blank = True, null = True, verbose_name='Автор')
     title = models.CharField(_('Заголовок'), max_length=128)
     text = models.TextField(_('Текст статьи'), max_length=4096)
     image = models.FileField(_('Обложка'), upload_to='news')
@@ -150,14 +160,14 @@ class News(models.Model):
         return self.title
 
     class Meta:
-        ordering = ['-approved', '-created_at']
+        ordering = ('-approved', '-created_at', )
         verbose_name = _('новость')
         verbose_name_plural = _('Новости')
 
 class BookingTypes(models.Model):
     title = models.CharField(_('Название'), max_length=32)
     desc = models.CharField(_('Описание'), max_length=512)
-    cost = models.SmallIntegerField(_('Стоимость'), )
+    cost = models.SmallIntegerField(_('Стоимость'), default=0)
 
     def __str__(self):
         return self.title
@@ -169,7 +179,7 @@ class BookingTypes(models.Model):
 class BookingOptions(models.Model):
     title = models.CharField(_('Название'), max_length=32)
     desc = models.CharField(_('Описание'), max_length=512)
-    cost = models.SmallIntegerField(_('Стоимость'), )
+    cost = models.SmallIntegerField(_('Стоимость'), default=0)
 
     def __str__(self):
         return self.title
@@ -188,21 +198,26 @@ class Bookings(models.Model):
     )
 
 
-    user = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='customer', blank = True, null = True)
-    date = models.DateField()
-    time_start = models.TimeField(_('Начало'), blank=True, null=True)
-    time_end = models.TimeField(_('Конец'), blank=True, null=True)
+    user = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='customer', blank = True, null = True, verbose_name='Пользователь')
+    
+    date = models.DateField(_('Дата'))
+    time_start = models.TimeField(_('Начало'))
+    time_end = models.TimeField(_('Конец'))
+    
     status = models.CharField(_('Статус'), max_length=16, choices=STATUS_CHOICES, default=IS_CREATED)
     
-    location = models.ForeignKey(Locations, on_delete=models.CASCADE, related_name='location')
-    photograph = models.ForeignKey(Photographs, on_delete=models.CASCADE, blank=True, null=True, related_name='photograph')
-    types = models.ForeignKey(BookingTypes, on_delete=models.CASCADE, blank=True, related_name='type')
-    options = models.ManyToManyField(BookingOptions, blank=True, related_name='options_choice')
+    location = models.ForeignKey(Locations, on_delete=models.CASCADE, related_name='location', verbose_name='Локация')
+    photograph = models.ForeignKey(Photographs, on_delete=models.CASCADE, blank=True, null=True, related_name='photograph', verbose_name='Фотограф')
+    types = models.ForeignKey(BookingTypes, on_delete=models.CASCADE, verbose_name='Тип бронирования')
+    options = models.ManyToManyField(BookingOptions, blank=True, related_name='options_choice', verbose_name='Дополнительные услуги')
 
     payment_notification = models.BooleanField(_('Оповещение I'), default=False)
     reminder_notification = models.BooleanField(_('Оповещение II'), default=False)
 
-    cost = models.SmallIntegerField(_('Стоимость'), blank=True, null=True)
+    cost = models.SmallIntegerField(_('Стоимость'), default=0)
+    bonus_used = models.SmallIntegerField(_('Использованные бонусы'), default=0)
+
+    # contract = models.FileField(_('Договор'), upload_to='contracts')
 
     def __str__(self):
         return str(self.date)
@@ -212,20 +227,10 @@ class Bookings(models.Model):
         verbose_name = _('бронирование')
         verbose_name_plural = _('Бронирования')
 
-# IS_PAYED = "IS_PAYED"
-# IN_PROGRESS = "IN_PROGRESS"
-# IS_DONE = "IS_DONE"
-
-# STATUS_CHOICES = (
-#     (IS_PAYED, "Оплачен"),
-#     (IN_PROGRESS, "Выполняется"),
-#     (IS_DONE, "Завершен"),
-# )
-
-# status = models.CharField(_('Статус'), max_length=16, choices=STATUS_CHOICES, default=IS_PAYED)
+# Multiple Fields
 
 class MultipleImageLocations(models.Model):
-    relation = models.ForeignKey(Locations, on_delete=models.CASCADE, related_name='examples')
+    relation = models.ForeignKey(Locations, on_delete=models.CASCADE, related_name='examples', verbose_name='Модель')
     image = models.FileField(_('Изображение'), upload_to='locations')
 
     class Meta:
@@ -233,7 +238,7 @@ class MultipleImageLocations(models.Model):
         verbose_name_plural = _('Фотографии студии')
 
 class MultipleImagePhotographs(models.Model):
-    relation = models.ForeignKey(Photographs, on_delete=models.CASCADE, related_name='examples')
+    relation = models.ForeignKey(Photographs, on_delete=models.CASCADE, related_name='examples', verbose_name='Модель')
     image = models.FileField(_('Изображение'), upload_to='news')
 
     class Meta:
@@ -241,7 +246,7 @@ class MultipleImagePhotographs(models.Model):
         verbose_name_plural = _('Примеры работ')
 
 class MultipleRawImageBookings(models.Model):
-    relation = models.ForeignKey(Bookings, on_delete=models.CASCADE, related_name='photos_raw')
+    relation = models.ForeignKey(Bookings, on_delete=models.CASCADE, related_name='photos_raw', verbose_name='Модель')
     image = models.FileField(_('RAW'), upload_to='bookings/raw')
 
     class Meta:
@@ -249,7 +254,7 @@ class MultipleRawImageBookings(models.Model):
         verbose_name_plural = _('RAW-Фотографии')
 
 class MultipleProcessedImageBookings(models.Model):
-    relation = models.ForeignKey(Bookings, on_delete=models.CASCADE, related_name='photos_processed')
+    relation = models.ForeignKey(Bookings, on_delete=models.CASCADE, related_name='photos_processed', verbose_name='Модель')
     image = models.FileField(_('Ретушь'), upload_to='bookings/processed')
 
     class Meta:

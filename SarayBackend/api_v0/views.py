@@ -12,8 +12,8 @@ from .renderers import UserJSONRenderer
 from .serializers import *
 
 class RegistrationAPIView(APIView):
-    permission_classes = (AllowAny,)
-    renderer_classes = (UserJSONRenderer,)
+    permission_classes = (AllowAny, )
+    renderer_classes = (UserJSONRenderer, )
     serializer_class = RegistrationSerializer
 
     def post(self, request):
@@ -26,8 +26,8 @@ class RegistrationAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class LoginAPIView(APIView):
-    permission_classes = (AllowAny,)
-    renderer_classes = (UserJSONRenderer,)
+    permission_classes = (AllowAny, )
+    renderer_classes = (UserJSONRenderer, )
     serializer_class = LoginSerializer
 
     def post(self, request):
@@ -39,8 +39,8 @@ class LoginAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
-    permission_classes = (IsAuthenticated,)
-    renderer_classes = (UserJSONRenderer,)
+    permission_classes = (IsAuthenticated, )
+    renderer_classes = (UserJSONRenderer, )
     serializer_class = UserSerializer
 
     def retrieve(self, request, *args, **kwargs):
@@ -60,19 +60,24 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = (AllowAny, )
     queryset = Locations.objects.all()
 
     def get_serializer_class(self):
+        if self.action == 'list':
+            return LocationsPreviewSerializer
         return LocationsDetailSerializer
 
 class PhotographsViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = (AllowAny, )
     queryset = Photographs.objects.all()
 
     def get_serializer_class(self):
         return PhotographsDetailSerializer
 
 class NewsViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = News.objects.all()
+    permission_classes = (AllowAny, )
+    queryset = News.objects.filter(approved=True)
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -80,39 +85,37 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
         return NewsDetailSerializer
 
 class BookingTypesViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = (AllowAny, )
     queryset = BookingTypes.objects.all()
 
     def get_serializer_class(self):
         return BookingTypesDetailSerializer
 
 class BookingOptionsViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = (AllowAny, )
     queryset = BookingOptions.objects.all()
 
     def get_serializer_class(self):
         return BookingOptionsDetailSerializer
 
 class BookingsRentTimeViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Bookings.objects.all()
+    permission_classes = (IsAuthenticated, )
+    queryset = Bookings.objects.filter(status=Bookings.IS_PAYED)
     serializer_class = BookingsRentTimeSerializer
 
     def get_queryset(self):
         if (len(self.request.GET) >= 3):
-            date = self.request.GET
-            year = int(date['year'])
-            month = int(date['month'])
-            day = int(date['day'])
-        else:
-            date = datetime.datetime.today()
+            data = self.request.GET
+            year = int(data['year'])
+            month = int(data['month'])
+            day = int(data['day'])
+            # location = int(data['location'])
 
-            year = date.year
-            month = date.month
-            day = date.day
-
-        return Bookings.objects.filter(date=datetime.date(year, month, day))
+        return Bookings.objects.filter(date=datetime.date(year, month, day), status=Bookings.IS_PAYED)
 
 class BookingsViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = (IsAuthenticated,)
-    queryset = Bookings.objects.all()
+    permission_classes = (IsAuthenticated, )
+    queryset = Bookings.objects.filter(status=Bookings.IS_PAYED)
 
     def get_serializer_class(self):
         if self.action == 'list':

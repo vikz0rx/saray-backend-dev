@@ -1,10 +1,9 @@
 import os
+
 from django.utils.translation import ugettext_lazy as _
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 SECRET_KEY = '8m2*pmzajao%z8ldf-uu3+j)-78e13yv5m-1a&+um!90)j1045'
-
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']

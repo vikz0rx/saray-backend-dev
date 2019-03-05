@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.utils.html import format_html
+
 from mediumeditor.admin import MediumEditorAdmin
+
 from .models import *
 
 class MultipleImagePhotographsInline(admin.TabularInline):
@@ -13,11 +15,11 @@ class MultipleImageLocationsInline(admin.TabularInline):
 
 class MultipleRawImageBookingsInline(admin.TabularInline):
     model = MultipleRawImageBookings
-    extra = 5
+    extra = 10
 
 class MultipleProcessedImageBookingsInline(admin.TabularInline):
     model = MultipleProcessedImageBookings
-    extra = 5
+    extra = 10
 
 @admin.register(SarayUser)
 class SarayUserAdmin(admin.ModelAdmin):
@@ -26,53 +28,35 @@ class SarayUserAdmin(admin.ModelAdmin):
             return '+' + obj.phone[0] + '(' + obj.phone[1:4] + ')' + obj.phone[4:7] + '-' + obj.phone[7:]
         return '-'
 
-    phone_refactored.short_description = 'Номер телефона'
-
     def name_refactored(self, obj):
-        if obj.firstname and obj.lastname and obj.fathersname:
-            return obj.lastname + ' ' + obj.firstname + ' ' + obj.fathersname
-        elif obj.firstname and obj.lastname:
-            return obj.firstname + ' ' + obj.lastname
+        if obj.first_name and obj.last_name and obj.fathers_name:
+            return obj.last_name + ' ' + obj.first_name + ' ' + obj.fathers_name
+        elif obj.first_name and obj.last_name:
+            return obj.first_name + ' ' + obj.last_name
         else:
             return obj.username
 
-    name_refactored.short_description = 'ФИО'
+    phone_refactored.short_description = 'Номер телефона'
+    name_refactored.short_description = 'Ф.И.О.'
 
-    list_display = ['name_refactored', 'phone_refactored', 'email', 'birthdate']
-    search_fields = ('lastname', )
+    list_display = ('name_refactored', 'phone_refactored', 'email', 'birthdate', )
+    search_fields = ('last_name', )
 
     def get_exclude(self, request, obj=None):
-        exclude = ('last_login', 'user_permissions')
+        exclude = ('password', 'last_login', 'user_permissions', 'is_superuser', 'groups')
+        if not request.user.is_superuser:
+            exclude += ('is_staff', )
 
-        if obj:
-            if obj.is_staff:
-                return exclude + ('bonus', 'birthdate', 'passport_series', 'passport_number', 'insurance', 'sms_notification', 'mail_notification', 'allow_to_use_photos', )
-            return exclude
-        else:
-            return exclude + ('password', )
+        return exclude
 
     def get_readonly_fields(self, request, obj=None):
-        readonly_fields = ('last_login', 'is_superuser', 'is_staff', 'groups', )
-        not_user_fields = ('username', 'email', 'phone', 'image', 'firstname', 'lastname', 'fathersname', 'birthdate', 'passport_series', 'passport_number', 'insurance', )
-        notification_fields = ('sms_notification', 'mail_notification', 'allow_to_use_photos', )
-
-        if obj:
-            if request.user != obj:
-                if request.user.is_superuser:
-                    return not_user_fields + notification_fields + readonly_fields
-                elif request.user.is_staff:
-                    return not_user_fields + ('bonus', ) + notification_fields + readonly_fields + ('is_active', )
-                else:
-                    return not_user_fields + ('bonus', ) + notification_fields + readonly_fields + ('is_active', )
-            else:
-                if request.user.is_superuser:
-                    return readonly_fields + ('is_active', )
-                elif request.user.is_staff:
-                    return readonly_fields + ('is_active', )
-                else:
-                    return readonly_fields + ('is_active', )
+        readonly_fields = ('bonus_amount', 'username', 'email', 'phone', 'image', 'first_name', 'last_name', 'fathers_name', 'birthdate', 'passport_series', 'passport_number', 'insurance', 'sms_notification', 'mail_notification', 'allow_to_use_photos', )
+        if request.user.is_superuser:
+            readonly_fields += ('is_staff', )
         else:
-            return []
+            readonly_fields += ('is_active', 'bonus', )
+
+        return readonly_fields
 
 @admin.register(Locations)
 class LocationsAdmin(MediumEditorAdmin, admin.ModelAdmin):
@@ -81,17 +65,14 @@ class LocationsAdmin(MediumEditorAdmin, admin.ModelAdmin):
 
     image_tag.short_description = ''
 
-    list_display = ['title', 'image_tag']
-
-    inlines = [ MultipleImageLocationsInline, ]
-
+    list_display = ('title', 'cost', 'image_tag', )
+    inlines = (MultipleImageLocationsInline, )
     mediumeditor_fields = ('text', )
 
 @admin.register(Photographs)
 class PhotographsAdmin(admin.ModelAdmin):
-    list_display = ['link', 'first_name', 'last_name', 'desc']
-
-    inlines = [ MultipleImagePhotographsInline, ]
+    list_display = ('link', 'first_name', 'last_name', )
+    inlines = (MultipleImagePhotographsInline, )
 
 @admin.register(News)
 class NewsAdmin(MediumEditorAdmin, admin.ModelAdmin):
@@ -100,104 +81,109 @@ class NewsAdmin(MediumEditorAdmin, admin.ModelAdmin):
     
     image_tag.short_description = 'Обложка'
 
-    list_display = ['author', 'title', 'created_at', 'image_tag', 'approved']
-    readonly_fields = ('author', )
+    list_display = ('image_tag', 'author', 'title', 'created_at', 'approved', )
     search_fields = ('title', )
-
     mediumeditor_fields = ('text', )
 
-    def get_form(self, request, obj=None, **kwargs):
+    def get_exclude(self, request, obj=None):
+        exclude = ()
         if not request.user.is_superuser:
-            self.exclude = ('approved', )
-        return super(NewsAdmin, self).get_form(request, obj, **kwargs)
+            exclude += ('author', )
+        
+        return exclude
 
-    def save_model(self, request, obj, form, change):
-        if not change:
-            obj.author = request.user
-        obj.save()
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = ()
+        if not request.user.is_superuser:
+            readonly_fields += ('approved', )
+        else:
+            readonly_fields += ('author', )
+
+        return readonly_fields
 
     def get_queryset(self, request):
         if request.user.is_superuser:
             return News.objects.all()
         return News.objects.filter(author=request.user)
 
-    def has_change_permission(self, request, obj=None):
-        has_class_permission = super(NewsAdmin, self).has_change_permission(request, obj)
-        if not has_class_permission:
-            return False
-        if obj is not None and not request.user.is_superuser and request.user.id != obj.author.id:
-            return False
-        return True
-
-    def has_delete_permission(self, request, obj=None):
-        has_class_permission = super(NewsAdmin, self).has_delete_permission(request, obj)
-        if not has_class_permission:
-            return False
-        if obj is not None and not request.user.is_superuser and request.user.id != obj.author.id:
-            return False
-        return True
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.author = request.user
+        obj.save()
 
 @admin.register(BookingTypes)
 class BookingTypesAdmin(admin.ModelAdmin):
-    list_display = ['title', 'desc', 'cost']
+    list_display = ('title', 'desc', 'cost', )
 
 @admin.register(BookingOptions)
 class BookingOptionsAdmin(admin.ModelAdmin):
-    list_display = ['title', 'desc', 'cost']
+    list_display = ('title', 'desc', 'cost', )
+
 
 @admin.register(Bookings)
 class BookingsAdmin(admin.ModelAdmin):
-    def image_tag(self, obj):
-        return format_html('<img src="{}" />'.format(obj.location.image.url))
-
-    image_tag.short_description = ''
-
     def send_notification(self, request, queryset):
-        print(request)
-        print(queryset)
-    
-    send_notification.short_description = "Отправить дополнительное уведомление"
+        SMS_API = '8BF374E2-915E-C59E-28D3-DA429B13E441'
+
+        for booking in queryset:
+            # Send EMail
+
+            if booking.user.sms_notification:
+                phone = booking.user.phone
+                message = u'Бронирование №{}, Пользователь - {}'.format(booking.id, booking.user)
+                req = 'https://sms.ru/sms/send?api_id={}&to={}&msg={}'.format(SMS_API, phone, message)
+
+    send_notification.short_description = 'Отправить повторное уведомление'
+
+    list_display = ('id', 'date', 'user', 'location', 'time_start', 'time_end', 'payment_notification', 'reminder_notification', 'cost', 'status', )
+    inlines = (MultipleRawImageBookingsInline, MultipleProcessedImageBookingsInline, )
+    actions = ('send_notification', )
+
+    def get_exclude(self, request, obj=None):
+        exclude = ()
+        return exclude
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = ('user', 'status', 'payment_notification', 'reminder_notification', 'cost', 'bonus_used', )
+        return readonly_fields
 
     def save_model(self, request, obj, form, change):
         if not change:
             obj.save()
 
-            # BOOKING COST CALCULATION
-            cost = 0
-            cost += obj.location.cost 
-            cost += obj.types.cost 
-            for item in obj.options.all():
-                cost += item.cost
-            if obj.photograph:
-                cost += obj.photograph.cost
-            obj.cost = cost
-
-            # SEND SMS / MAIL NOTIFICATION
             obj.payment_notification = True
-            
-            # BONUS AMOUNT CALCULATING
-            obj.user.bonus_amount = obj.user.bonus_amount + int(obj.cost * {SarayUser.BONUS_CLASSIC: .03, SarayUser.BONUS_SILVER: .07, SarayUser.BONUS_GOLD: .15, SarayUser.BONUS_PLATINUM: .20}.get(obj.user.bonus))
+            obj.user.bonus_amount += int(obj.cost * {SarayUser.BONUS_CLASSIC: .03, SarayUser.BONUS_SILVER: .07, SarayUser.BONUS_GOLD: .15, SarayUser.BONUS_PLATINUM: .20}.get(obj.user.bonus)) - obj.bonus_used
 
-            # BONUS CARD SELECTION
-            overall_user_sum = 0
-            for item in Bookings.objects.filter(user=obj.user):
-                overall_user_sum += item.cost
-
-            if overall_user_sum >= 300000:
+            # Bonus card
+            if True:
                 obj.user.bonus = SarayUser.BONUS_PLATINUM
-            elif overall_user_sum >= 200000:
+            elif True:
                 obj.user.bonus = SarayUser.BONUS_GOLD
-            elif overall_user_sum >= 100000:
+            elif True:
                 obj.user.bonus = SarayUser.BONUS_SILVER
             else:
                 obj.user.bonus = SarayUser.BONUS_CLASSIC
 
             obj.user.save()
 
+        cost = 0
+        cost += obj.location.cost
+
+        if obj.date.weekday() > 5:
+            cost += obj.location.over_week_cost
+
+        # if obj.time_start:
+        #     cost += obj.location.over_time_cost
+
+        cost += obj.types.cost
+        cost -= obj.bonus_used
+
+        for item in obj.options.all():
+            cost += item.cost
+
+        if obj.photograph:
+            cost += obj.photograph.cost
+
+        obj.cost = cost
+
         obj.save()
-
-    actions = ['send_notification']
-    list_display = ['user', 'date', 'location', 'image_tag', 'time_start', 'time_end', 'payment_notification', 'reminder_notification', 'cost', 'status']
-    readonly_fields = ('payment_notification', 'reminder_notification', 'cost', ) # 'user'
-
-    inlines = [ MultipleRawImageBookingsInline, MultipleProcessedImageBookingsInline, ]
