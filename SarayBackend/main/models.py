@@ -154,7 +154,7 @@ class News(models.Model):
     text = models.TextField(_('Текст статьи'), max_length=4096)
     image = models.FileField(_('Обложка'), upload_to='news')
     approved = models.BooleanField(_('Одобрено'), default=False)
-    created_at = models.DateTimeField(_('Дата создания'), auto_now_add=True)
+    created_at = models.DateField(_('Дата создания'), auto_now_add=True)
 
     def __str__(self):
         return self.title
