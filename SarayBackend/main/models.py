@@ -149,7 +149,7 @@ class Photographs(models.Model):
         verbose_name_plural = _('Фотографы')
 
 class News(models.Model):
-    author = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='author', blank = True, null = True, verbose_name='Автор')
+    author = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='author', blank = True, null = True, limit_choices_to={'groups__name': 'saray_manager'}, verbose_name='Автор')
     title = models.CharField(_('Заголовок'), max_length=128)
     text = models.TextField(_('Текст статьи'), max_length=4096)
     image = models.FileField(_('Обложка'), upload_to='news')
@@ -191,14 +191,16 @@ class BookingOptions(models.Model):
 class Bookings(models.Model):
     IS_CREATED = "IN_PROGRESS"
     IS_PAYED = "IS_PAYED"
+    IS_DONE = "IS_DONE"
 
     STATUS_CHOICES = (
         (IS_CREATED, "Не оплачен"),
         (IS_PAYED, "Оплачен"),
+        (IS_DONE, "Выполнен"),
     )
 
 
-    user = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='customer', blank = True, null = True, verbose_name='Пользователь')
+    user = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='customer', blank = True, null = True, limit_choices_to={'groups__name': 'saray_customer'}, verbose_name='Пользователь')
     
     date = models.DateField(_('Дата'))
     time_start = models.TimeField(_('Начало'))

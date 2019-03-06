@@ -1,9 +1,12 @@
+from datetime import datetime, date, time
+
 from django.contrib import admin
 from django.utils.html import format_html
 
 from mediumeditor.admin import MediumEditorAdmin
 
 from .models import *
+from .notifications import *
 
 class MultipleImagePhotographsInline(admin.TabularInline):
     model = MultipleImagePhotographs
@@ -43,18 +46,42 @@ class SarayUserAdmin(admin.ModelAdmin):
     search_fields = ('last_name', )
 
     def get_exclude(self, request, obj=None):
-        exclude = ('password', 'last_login', 'user_permissions', 'is_superuser', 'groups')
-        if not request.user.is_superuser:
-            exclude += ('is_staff', )
+        exclude = ('last_login', 'user_permissions', )
 
+        if request.user.is_staff and request.user == obj:
+            exclude += ('is_staff', 'is_superuser', 'groups', 'bonus', 'bonus_amount', 'passport_series', 'passport_number', 'insurance', 'sms_notification', 'mail_notification', 'allow_to_use_photos', 'is_active', )
+
+            return exclude
+
+        if obj:
+            exclude += ('password', )
+            if obj.is_staff:
+                exclude += ('bonus', 'bonus_amount', 'passport_series', 'passport_number', 'insurance', 'sms_notification', 'mail_notification', 'allow_to_use_photos', )
+            else:
+                exclude += ('is_staff', 'is_superuser', 'groups', )
+        else:
+            exclude += ('bonus', 'bonus_amount', 'passport_series', 'passport_number', 'insurance', 'sms_notification', 'mail_notification', 'allow_to_use_photos', 'is_active', )
+    
         return exclude
 
     def get_readonly_fields(self, request, obj=None):
-        readonly_fields = ('bonus_amount', 'username', 'email', 'phone', 'image', 'first_name', 'last_name', 'fathers_name', 'birthdate', 'passport_series', 'passport_number', 'insurance', 'sms_notification', 'mail_notification', 'allow_to_use_photos', )
-        if request.user.is_superuser:
-            readonly_fields += ('is_staff', )
-        else:
-            readonly_fields += ('is_active', 'bonus', )
+        readonly_fields = ()
+
+        if request.user.is_staff and request.user == obj:
+            return readonly_fields
+
+        if obj:
+            readonly_fields += ('username', 'email', 'phone', 'image', 'first_name', 'last_name', 'fathers_name', 'birthdate', )
+            if obj.is_staff:
+                readonly_fields += ('is_staff', 'is_superuser', 'groups', )
+
+                if not request.user.is_superuser:
+                    readonly_fields += ('is_active', )
+            else:
+                readonly_fields += ('passport_series', 'passport_number', 'insurance', 'sms_notification', 'mail_notification', 'allow_to_use_photos', 'is_active', )
+
+                if not request.user.is_superuser:
+                    readonly_fields += ('bonus', 'bonus_amount', )
 
         return readonly_fields
 
@@ -65,7 +92,7 @@ class LocationsAdmin(MediumEditorAdmin, admin.ModelAdmin):
 
     image_tag.short_description = ''
 
-    list_display = ('title', 'cost', 'image_tag', )
+    list_display = ('image_tag', 'title', 'cost', )
     inlines = (MultipleImageLocationsInline, )
     mediumeditor_fields = ('text', )
 
@@ -123,15 +150,12 @@ class BookingOptionsAdmin(admin.ModelAdmin):
 @admin.register(Bookings)
 class BookingsAdmin(admin.ModelAdmin):
     def send_notification(self, request, queryset):
-        SMS_API = '8BF374E2-915E-C59E-28D3-DA429B13E441'
-
         for booking in queryset:
-            # Send EMail
+            message = u'Дополнительное уведомление\r\n\r\nБронирование №{}\r\n\r\nПользователь - {}'.format(booking.id, booking.user)
 
+            send_mail(message, booking.user.email)
             if booking.user.sms_notification:
-                phone = booking.user.phone
-                message = u'Бронирование №{}, Пользователь - {}'.format(booking.id, booking.user)
-                req = 'https://sms.ru/sms/send?api_id={}&to={}&msg={}'.format(SMS_API, phone, message)
+                send_sms(message, booking.user.phone)
 
     send_notification.short_description = 'Отправить повторное уведомление'
 
@@ -141,10 +165,18 @@ class BookingsAdmin(admin.ModelAdmin):
 
     def get_exclude(self, request, obj=None):
         exclude = ()
+
+        if not obj:
+            exclude += ('status', 'payment_notification', 'reminder_notification', 'cost', 'bonus_used', )
+
         return exclude
 
     def get_readonly_fields(self, request, obj=None):
-        readonly_fields = ('user', 'status', 'payment_notification', 'reminder_notification', 'cost', 'bonus_used', )
+        readonly_fields = ()
+
+        if obj:
+            readonly_fields += ('user', 'status', 'payment_notification', 'reminder_notification', 'cost', 'bonus_used', )
+
         return readonly_fields
 
     def save_model(self, request, obj, form, change):
@@ -154,36 +186,60 @@ class BookingsAdmin(admin.ModelAdmin):
             obj.payment_notification = True
             obj.user.bonus_amount += int(obj.cost * {SarayUser.BONUS_CLASSIC: .03, SarayUser.BONUS_SILVER: .07, SarayUser.BONUS_GOLD: .15, SarayUser.BONUS_PLATINUM: .20}.get(obj.user.bonus)) - obj.bonus_used
 
-            # Bonus card
-            if True:
+            total_hours = 0
+
+            for booking in Bookings.objects.filter(user=obj.user):
+                booking_time = datetime.combine(booking.date, booking.time_end) - datetime.combine(booking.date, booking.time_start)
+                hours = int(booking_time.total_seconds() / 3600)
+                total_hours += hours
+            
+            if total_hours >= 150:
                 obj.user.bonus = SarayUser.BONUS_PLATINUM
-            elif True:
+            elif total_hours >= 70:
                 obj.user.bonus = SarayUser.BONUS_GOLD
-            elif True:
+            elif total_hours >= 20:
                 obj.user.bonus = SarayUser.BONUS_SILVER
             else:
                 obj.user.bonus = SarayUser.BONUS_CLASSIC
 
             obj.user.save()
+            obj.save()
+
+        total_hours = 0
+        booking_time = datetime.combine(obj.date, obj.time_end) - datetime.combine(obj.date, obj.time_start)
+        hours = int(booking_time.total_seconds() / 3600)
+        total_hours += hours
+
 
         cost = 0
-        cost += obj.location.cost
+        cost += obj.location.cost * total_hours
 
         if obj.date.weekday() > 5:
-            cost += obj.location.over_week_cost
+            cost += obj.location.over_week_cost * total_hours
 
-        # if obj.time_start:
-        #     cost += obj.location.over_time_cost
+        if obj.time_start > time(22, 00):
+            cost += obj.location.over_time_cost * total_hours
 
         cost += obj.types.cost
         cost -= obj.bonus_used
 
         for item in obj.options.all():
-            cost += item.cost
+            cost += item.cost * total_hours
 
         if obj.photograph:
-            cost += obj.photograph.cost
+            cost += obj.photograph.cost * total_hours
 
         obj.cost = cost
 
         obj.save()
+
+        if not change:
+            message = u'Новое бронирование №{}\r\n\r\nПользователь - {}'.format(obj.id, obj.user)
+            send_mail(message, obj.user.email)
+            if booking.user.sms_notification:
+                send_sms(message, obj.user.phone)
+        elif obj.status == Bookings.IS_DONE:
+            message = u'Выполненное бронирование №{}\r\n\r\nПользователь - {}'.format(obj.id, obj.user)
+            send_mail(message, obj.user.email)
+            if booking.user.sms_notification:
+                send_sms(message, obj.user.phone)
