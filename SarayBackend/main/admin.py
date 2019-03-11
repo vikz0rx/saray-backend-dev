@@ -126,6 +126,10 @@ class NewsAdmin(MediumEditorAdmin, admin.ModelAdmin):
         else:
             readonly_fields += ('author', )
 
+        if obj:
+            if obj.approved and not request.user.is_superuser:
+                readonly_fields += ('title', 'text', 'image', )
+
         return readonly_fields
 
     def get_queryset(self, request):
@@ -159,7 +163,7 @@ class BookingsAdmin(admin.ModelAdmin):
 
     send_notification.short_description = 'Отправить повторное уведомление'
 
-    list_display = ('id', 'date', 'user', 'location', 'time_start', 'time_end', 'payment_notification', 'reminder_notification', 'cost', 'status', )
+    list_display = ('date', 'user', 'location', 'time_start', 'time_end', 'payment_notification', 'reminder_notification', 'cost', 'status', )
     inlines = (MultipleRawImageBookingsInline, MultipleProcessedImageBookingsInline, )
     actions = ('send_notification', )
 
@@ -180,66 +184,44 @@ class BookingsAdmin(admin.ModelAdmin):
         return readonly_fields
 
     def save_model(self, request, obj, form, change):
-        if not change:
-            obj.save()
+        obj.save()
 
-            obj.payment_notification = True
+        booking_total = int((datetime.combine(obj.date, obj.time_end) - datetime.combine(obj.date, obj.time_start)).total_seconds() / 3600)
+        booking_cost = 0
+
+        booking_cost += obj.location.cost * booking_total
+        booking_cost += obj.types.cost
+        booking_cost += obj.photograph.cost * booking_total if obj.photograph else booking_cost
+        booking_cost += obj.location.over_week_cost * booking_total if obj.date.weekday() > 5 else booking_cost
+        booking_cost += obj.location.over_time_cost * booking_total if obj.time_start > time(22, 00) else booking_cost
+        booking_cost -= obj.bonus_used
+
+        for option in obj.options.all():
+            booking_cost += option.cost * booking_total
+
+        obj.cost = booking_cost
+        obj.save()
+
+        if not change:
+            message = '{} - {}'.format(obj.id, obj.user)
+            # send_mail(message, obj.user.email)
+            # send_sms(message, obj.user.phone) if obj.user.sms_notification else 0
+
             obj.user.bonus_amount += int(obj.cost * {SarayUser.BONUS_CLASSIC: .03, SarayUser.BONUS_SILVER: .07, SarayUser.BONUS_GOLD: .15, SarayUser.BONUS_PLATINUM: .20}.get(obj.user.bonus)) - obj.bonus_used
 
-            total_hours = 0
-
+            user_booking_total = 0
             for booking in Bookings.objects.filter(user=obj.user):
-                booking_time = datetime.combine(booking.date, booking.time_end) - datetime.combine(booking.date, booking.time_start)
-                hours = int(booking_time.total_seconds() / 3600)
-                total_hours += hours
+                    hours = datetime.combine(booking.date, booking.time_end) - datetime.combine(booking.date, booking.time_start)
+                    hours = int(hours.total_seconds() / 3600)
+                    user_booking_total += hours
             
-            if total_hours >= 150:
+            if user_booking_total >= 150:
                 obj.user.bonus = SarayUser.BONUS_PLATINUM
-            elif total_hours >= 70:
+            elif user_booking_total >= 70:
                 obj.user.bonus = SarayUser.BONUS_GOLD
-            elif total_hours >= 20:
+            elif user_booking_total >= 20:
                 obj.user.bonus = SarayUser.BONUS_SILVER
             else:
                 obj.user.bonus = SarayUser.BONUS_CLASSIC
 
             obj.user.save()
-            obj.save()
-
-        total_hours = 0
-        booking_time = datetime.combine(obj.date, obj.time_end) - datetime.combine(obj.date, obj.time_start)
-        hours = int(booking_time.total_seconds() / 3600)
-        total_hours += hours
-
-
-        cost = 0
-        cost += obj.location.cost * total_hours
-
-        if obj.date.weekday() > 5:
-            cost += obj.location.over_week_cost * total_hours
-
-        if obj.time_start > time(22, 00):
-            cost += obj.location.over_time_cost * total_hours
-
-        cost += obj.types.cost
-        cost -= obj.bonus_used
-
-        for item in obj.options.all():
-            cost += item.cost * total_hours
-
-        if obj.photograph:
-            cost += obj.photograph.cost * total_hours
-
-        obj.cost = cost
-
-        obj.save()
-
-        if not change:
-            message = u'Новое бронирование №{}\r\n\r\nПользователь - {}'.format(obj.id, obj.user)
-            send_mail(message, obj.user.email)
-            if booking.user.sms_notification:
-                send_sms(message, obj.user.phone)
-        elif obj.status == Bookings.IS_DONE:
-            message = u'Выполненное бронирование №{}\r\n\r\nПользователь - {}'.format(obj.id, obj.user)
-            send_mail(message, obj.user.email)
-            if booking.user.sms_notification:
-                send_sms(message, obj.user.phone)

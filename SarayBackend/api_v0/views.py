@@ -113,8 +113,8 @@ class BookingsRentTimeViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Bookings.objects.filter(date=datetime.date(year, month, day), status=Bookings.IS_PAYED)
 
-class BookingsViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = (IsAuthenticated, )
+class BookingsViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated, )
     queryset = Bookings.objects.filter(status=Bookings.IS_PAYED)
 
     def get_serializer_class(self):

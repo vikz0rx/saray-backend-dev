@@ -242,6 +242,7 @@ class BookingsDetailSerializer(serializers.ModelSerializer):
         model = Bookings
         fields = [
             'id',
+            'user',
             'date',
             'time_start',
             'time_end',

@@ -1,11 +1,12 @@
 import jwt
+from datetime import datetime, date, time
 
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils.translation import ugettext_lazy as _
 
-from datetime import datetime, timedelta
+from .notifications import *
 
 class SarayUserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
@@ -223,6 +224,48 @@ class Bookings(models.Model):
 
     def __str__(self):
         return str(self.date)
+
+    def save(self, *args, **kwargs):
+        super(Bookings, self).save(*args, **kwargs)
+
+        booking_total = int((datetime.combine(self.date, self.time_end) - datetime.combine(self.date, self.time_start)).total_seconds() / 3600)
+        booking_cost = 0
+
+        booking_cost += self.location.cost * booking_total
+        booking_cost += self.types.cost
+        booking_cost += self.photograph.cost * booking_total if self.photograph else booking_cost
+        booking_cost += self.location.over_week_cost * booking_total if self.date.weekday() > 5 else booking_cost
+        booking_cost += self.location.over_time_cost * booking_total if self.time_start > time(22, 00) else booking_cost
+        booking_cost -= self.bonus_used
+
+        for option in self.options.all():
+            booking_cost += option.cost * booking_total
+
+        self.cost = booking_cost
+        Bookings.objects.filter(id=self.id).update(cost=booking_cost)
+
+        message = '{} - {}'.format(self.id, self.user)
+        # send_mail(message, self.user.email)
+        # send_sms(message, self.user.phone) if self.user.sms_notification else 0
+
+        self.user.bonus_amount += int(self.cost * {SarayUser.BONUS_CLASSIC: .03, SarayUser.BONUS_SILVER: .07, SarayUser.BONUS_GOLD: .15, SarayUser.BONUS_PLATINUM: .20}.get(self.user.bonus)) - self.bonus_used
+
+        user_booking_total = 0
+        for booking in Bookings.objects.filter(user=self.user):
+                hours = datetime.combine(booking.date, booking.time_end) - datetime.combine(booking.date, booking.time_start)
+                hours = int(hours.total_seconds() / 3600)
+                user_booking_total += hours
+        
+        if user_booking_total >= 150:
+            self.user.bonus = SarayUser.BONUS_PLATINUM
+        elif user_booking_total >= 70:
+            self.user.bonus = SarayUser.BONUS_GOLD
+        elif user_booking_total >= 20:
+            self.user.bonus = SarayUser.BONUS_SILVER
+        else:
+            self.user.bonus = SarayUser.BONUS_CLASSIC
+
+        self.user.save()
 
     class Meta:
         ordering = ['-status', '-date']
