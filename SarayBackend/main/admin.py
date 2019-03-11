@@ -128,7 +128,7 @@ class NewsAdmin(MediumEditorAdmin, admin.ModelAdmin):
 
         if obj:
             if obj.approved and not request.user.is_superuser:
-                readonly_fields += ('title', 'text', 'image', )
+                readonly_fields += ('title', 'desc', 'text', 'image', )
 
         return readonly_fields
 

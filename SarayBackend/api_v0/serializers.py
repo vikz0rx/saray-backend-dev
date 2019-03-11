@@ -160,23 +160,29 @@ class PhotographsDetailSerializer(serializers.ModelSerializer):
         ]
 
 class NewsPreviewSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source='author.get_short_name')
+
     class Meta:
         model = News
         fields = [
             'id',
-            'author',
+            'author_name',
             'title',
+            'desc',
             'image',
             'created_at',
         ]
 
 
 class NewsDetailSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source='author.get_short_name')
+
     class Meta:
         model = News
         fields = [
-            'author',
+            'author_name',
             'title',
+            'desc',
             'text',
             'image',
             'created_at',

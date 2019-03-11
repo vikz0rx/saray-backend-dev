@@ -99,8 +99,8 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
             return self.username
 
     def get_short_name(self):
-        if self.first_name:
-            return self.first_name
+        if self.first_name and self.last_name:
+            return self.first_name + ' ' + self.last_name
         else:
             return self.username
 
@@ -152,7 +152,8 @@ class Photographs(models.Model):
 class News(models.Model):
     author = models.ForeignKey(SarayUser, on_delete=models.CASCADE, related_name='author', blank = True, null = True, limit_choices_to={'groups__name': 'saray_manager'}, verbose_name='Автор')
     title = models.CharField(_('Заголовок'), max_length=128)
-    text = models.TextField(_('Текст статьи'), max_length=4096)
+    desc = models.CharField(_('Короткое описание'), max_length=512, blank = True, null = True)
+    text = models.TextField(_('Текст статьи'), max_length=8192)
     image = models.FileField(_('Обложка'), upload_to='news')
     approved = models.BooleanField(_('Одобрено'), default=False)
     created_at = models.DateField(_('Дата создания'), auto_now_add=True)
