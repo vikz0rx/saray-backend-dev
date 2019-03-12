@@ -89,6 +89,8 @@ STATIC_ROOT = '../SarayBackend/main/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '../SarayBackend/main/media/'
 
+FILE_UPLOAD_PERMISSIONS=0o640
+
 # AUTH SETTINGS
 
 AUTH_USER_MODEL = 'main.SarayUser'
