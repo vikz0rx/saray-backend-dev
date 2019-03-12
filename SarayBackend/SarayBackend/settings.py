@@ -89,7 +89,7 @@ STATIC_ROOT = '../SarayBackend/main/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '../SarayBackend/main/media/'
 
-FILE_UPLOAD_PERMISSIONS=0o640
+FILE_UPLOAD_PERMISSIONS=0o755
 
 # AUTH SETTINGS
 
