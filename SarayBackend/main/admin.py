@@ -3,6 +3,7 @@ from datetime import datetime, date, time
 from django.contrib import admin
 from django.utils.html import format_html
 
+from PIL import Image
 from mediumeditor.admin import MediumEditorAdmin
 
 from .models import *
@@ -140,6 +141,10 @@ class NewsAdmin(MediumEditorAdmin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not change:
             obj.author = request.user
+        obj.save()
+        image = Image.open(obj.image.path)
+        image.save(obj.image.path, quality=20, optimize=True)
+        obj.image = image
         obj.save()
 
 @admin.register(BookingTypes)

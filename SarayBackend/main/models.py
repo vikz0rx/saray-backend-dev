@@ -52,7 +52,7 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(_('Имя пользователя'), db_index=True, max_length=255, unique=True)
     email = models.EmailField(_('Электропочта'), db_index=True, unique=True)
     phone = models.CharField(_('Номер телефона'), max_length=11, null=True, blank=True)
-    image = models.FileField(_('Изображение'), upload_to='headshots', null=True, blank=True)
+    image = models.ImageField(_('Изображение'), upload_to='headshots', null=True, blank=True)
     
     first_name = models.CharField(_('Имя'), max_length=32, null=True, blank=True)
     last_name = models.CharField(_('Фамилия'), max_length=32, null=True, blank=True)
@@ -122,7 +122,7 @@ class SarayUser(AbstractBaseUser, PermissionsMixin):
 class Locations(models.Model):
     title = models.CharField(_('Название локации'), max_length=32)
     text = models.TextField(_('Описание'), max_length=4096)
-    image = models.FileField(_('Обложка'), upload_to='locations')
+    image = models.ImageField(_('Обложка'), upload_to='locations')
     cost = models.SmallIntegerField(_('Стоимость аренды'), default=0)
     over_week_cost = models.SmallIntegerField(_('Доп. стоимость (дни недели)'), default=0)
     over_time_cost = models.SmallIntegerField(_('Доп. стоимость (позднее время)'), default=0)
@@ -140,7 +140,7 @@ class Photographs(models.Model):
     desc = models.CharField(_('Описание'), max_length=64)
     link = models.CharField(_('Instagram'), max_length=64)
     cost = models.SmallIntegerField(_('Стоимость'), default=0)
-    image = models.FileField(_('Фотография'), upload_to='headshots')
+    image = models.ImageField(_('Фотография'), upload_to='headshots')
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
@@ -154,7 +154,7 @@ class News(models.Model):
     title = models.CharField(_('Заголовок'), max_length=128)
     desc = models.CharField(_('Короткое описание'), max_length=512, blank = True, null = True)
     text = models.TextField(_('Текст статьи'), max_length=8192)
-    image = models.FileField(_('Обложка'), upload_to='news')
+    image = models.ImageField(_('Обложка'), upload_to='news')
     approved = models.BooleanField(_('Одобрено'), default=False)
     created_at = models.DateField(_('Дата создания'), auto_now_add=True)
 
@@ -277,7 +277,7 @@ class Bookings(models.Model):
 
 class MultipleImageLocations(models.Model):
     relation = models.ForeignKey(Locations, on_delete=models.CASCADE, related_name='examples', verbose_name='Модель')
-    image = models.FileField(_('Изображение'), upload_to='locations')
+    image = models.ImageField(_('Изображение'), upload_to='locations')
 
     class Meta:
         verbose_name = _('фотографию студии')
@@ -285,7 +285,7 @@ class MultipleImageLocations(models.Model):
 
 class MultipleImagePhotographs(models.Model):
     relation = models.ForeignKey(Photographs, on_delete=models.CASCADE, related_name='examples', verbose_name='Модель')
-    image = models.FileField(_('Изображение'), upload_to='news')
+    image = models.ImageField(_('Изображение'), upload_to='news')
 
     class Meta:
         verbose_name = _('пример работы')
@@ -293,7 +293,7 @@ class MultipleImagePhotographs(models.Model):
 
 class MultipleRawImageBookings(models.Model):
     relation = models.ForeignKey(Bookings, on_delete=models.CASCADE, related_name='photos_raw', verbose_name='Модель')
-    image = models.FileField(_('RAW'), upload_to='bookings/raw')
+    image = models.ImageField(_('RAW'), upload_to='bookings/raw')
 
     class Meta:
         verbose_name = _('RAW-Фотографию')
@@ -301,7 +301,7 @@ class MultipleRawImageBookings(models.Model):
 
 class MultipleProcessedImageBookings(models.Model):
     relation = models.ForeignKey(Bookings, on_delete=models.CASCADE, related_name='photos_processed', verbose_name='Модель')
-    image = models.FileField(_('Ретушь'), upload_to='bookings/processed')
+    image = models.ImageField(_('Ретушь'), upload_to='bookings/processed')
 
     class Meta:
         verbose_name = _('ретушированную фотографию')
