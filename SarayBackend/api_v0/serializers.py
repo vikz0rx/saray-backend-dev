@@ -46,7 +46,7 @@ class LoginSerializer(serializers.Serializer):
             )
 
         user = authenticate(username=email, password=password)
-
+    
         if user is None:
             raise serializers.ValidationError(
                 'A user with this email and password was not found.'
@@ -150,6 +150,7 @@ class PhotographsDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photographs
         fields = [
+            'id',
             'first_name',
             'last_name',
             'desc',

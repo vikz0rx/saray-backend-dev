@@ -17,7 +17,7 @@ def send_mail(message, user_email):
 
     headers = [
         'From: ' + EMAIL,
-        u'Subject: SARAY PHOTOSTUDIO - Уведомление о заказе',
+        u'Subject: SARAY PHOTOSTUDIO',
         'To: ' + user_email,
         'MIME-Version: 1.0',
         'Content-Type: text/html'

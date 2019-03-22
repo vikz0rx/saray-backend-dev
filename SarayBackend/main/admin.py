@@ -142,10 +142,6 @@ class NewsAdmin(MediumEditorAdmin, admin.ModelAdmin):
         if not change:
             obj.author = request.user
         obj.save()
-        image = Image.open(obj.image.path)
-        image.save(obj.image.path, quality=20, optimize=True)
-        obj.image = image
-        obj.save()
 
 @admin.register(BookingTypes)
 class BookingTypesAdmin(admin.ModelAdmin):
@@ -160,7 +156,7 @@ class BookingOptionsAdmin(admin.ModelAdmin):
 class BookingsAdmin(admin.ModelAdmin):
     def send_notification(self, request, queryset):
         for booking in queryset:
-            message = u'Дополнительное уведомление\r\n\r\nБронирование №{}\r\n\r\nПользователь - {}'.format(booking.id, booking.user)
+            message = u'Reminder sent\r\n\r\Booking {}\r\n\r\ '.format(booking.id)
 
             send_mail(message, booking.user.email)
             if booking.user.sms_notification:
@@ -209,8 +205,8 @@ class BookingsAdmin(admin.ModelAdmin):
 
         if not change:
             message = '{} - {}'.format(obj.id, obj.user)
-            # send_mail(message, obj.user.email)
-            # send_sms(message, obj.user.phone) if obj.user.sms_notification else 0
+            send_mail(message, obj.user.email)
+            send_sms(message, obj.user.phone) if obj.user.sms_notification else 0
 
             obj.user.bonus_amount += int(obj.cost * {SarayUser.BONUS_CLASSIC: .03, SarayUser.BONUS_SILVER: .07, SarayUser.BONUS_GOLD: .15, SarayUser.BONUS_PLATINUM: .20}.get(obj.user.bonus)) - obj.bonus_used
 
